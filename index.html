@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neonbirr FMS - Franchisee Yönetim Sistemi</title>
+    <title>Neonbirr ERP</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Inter Font -->
@@ -34,7 +34,6 @@
         setLogLevel('Debug');
         
         // KENDİ GERÇEK FIREBASE CONFIG'İNİZİ TANIMLAYIN
-        // BU YAPIYI DİREKT KULLANIN, ÇÜNKÜ __firebase_config BOŞ GELİYOR OLABİLİR.
         const realFirebaseConfig = {
             apiKey: "AIzaSyAB0UsTKcsRu2JBm2bAYIDHTz_qLS1WATA",
             authDomain: "neonbirfranchisee.firebaseapp.com",
@@ -155,21 +154,28 @@
         // Kullanıcı rolünü Firestore'dan çekme
         const checkUserRole = async (uid) => {
             if (!window.db) return;
-            // Rol bilgisi /artifacts/{localAppId}/users/{userId}/roles/info içinde tutulacak.
+            
+            // Rol dokümanının yolu: /artifacts/neonbirfranchisee/users/{UID}/roles/info
             const userDocRef = doc(window.db, `artifacts/${localAppId}/users/${uid}/roles/info`);
+            
+            // Geliştirme kolaylığı için Admin Email adresi
+            const adminTestEmail = 'admin@neonbirr.com'; // Eğer Admin hesabınızın email'i bu ise
+
             try {
                 const userDoc = await getDoc(userDocRef);
+                
                 if (userDoc.exists()) {
-                    currentRole = userDoc.data().role || 'franchisee'; // Varsayılan rol franchisee
-                    console.log(`Kullanıcı rolü tespit edildi: ${currentRole}`);
+                    currentRole = userDoc.data().role || 'franchisee'; // Firestore'daki rolü kullan
+                    console.log(`Kullanıcı rolü Firestore'dan tespit edildi: ${currentRole}`);
                 } else {
-                    // Test amaçlı, eğer admin@neonbirr.com ile giriş yaparsa admin yapalım
-                    if (window.auth.currentUser && window.auth.currentUser.email === 'admin@neonbirr.com') {
+                    // Firestore'da rol atanmamışsa ve test amaçlı e-posta ise Admin rolünü ver
+                    if (window.auth.currentUser && window.auth.currentUser.email === adminTestEmail) {
                         currentRole = 'admin';
+                        console.warn(`Firestore'da rol bulunamadı. Test amaçlı Admin rolü atandı.`);
                     } else {
                         currentRole = 'franchisee';
+                        console.warn(`Firestore'da rol bulunamadı, varsayılan 'franchisee' rolü atandı.`);
                     }
-                    console.warn(`Kullanıcı rolü Firestore'da bulunamadı, varsayılan '${currentRole}' rolü atandı.`);
                 }
             } catch (error) {
                 console.error("Rol bilgisi çekilirken hata:", error.message);
