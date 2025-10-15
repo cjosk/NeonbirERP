@@ -32,18 +32,26 @@
 
         // Global Firebase ve Uygulama Ayarları
         setLogLevel('Debug');
-        const realFirebaseConfig = {
-  apiKey: "AIzaSyAB0UsTKcsRu2JBm2bAYIDHTz_qLS1WATA",
-  authDomain: "neonbirfranchisee.firebaseapp.com",
-  projectId: "neonbirfranchisee",
-  storageBucket: "neonbirfranchisee.firebasestorage.app",
-  messagingSenderId: "51668421951",
-  appId: "1:51668421951:web:7d94456ebe84bba439578a",
-  measurementId: "G-501H1CJ59J"
-};
         
+        // KENDİ GERÇEK FIREBASE CONFIG'İNİZİ TANIMLAYIN
+        // BU YAPIYI DİREKT KULLANIN, ÇÜNKÜ __firebase_config BOŞ GELİYOR OLABİLİR.
+        const realFirebaseConfig = {
+            apiKey: "AIzaSyAB0UsTKcsRu2JBm2bAYIDHTz_qLS1WATA",
+            authDomain: "neonbirfranchisee.firebaseapp.com",
+            projectId: "neonbirfranchisee",
+            storageBucket: "neonbirfranchisee.firebasestorage.app",
+            messagingSenderId: "51668421951",
+            appId: "1:51668421951:web:7d94456ebe84bba439578a",
+            measurementId: "G-501H1CJ59J"
+        };
+        
+        // Canvas'ın dahili config'i ile kendi config'inizi birleştirin (ya da direkt kendi config'inizi kullanın)
+        let firebaseConfig = realFirebaseConfig; 
+
         // HATA DÜZELTMESİ: 'appId' çakışmasını önlemek için yerel değişken ismi değiştirildi.
-        const localAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-neonbirr-app';
+        // Artık localAppId, Proje ID'niz olacak (Firestore path'leri için önemlidir)
+        const localAppId = firebaseConfig.projectId || 'default-neonbirr-app';
+
 
         if (Object.keys(firebaseConfig).length > 0) {
             window.app = initializeApp(firebaseConfig);
@@ -677,7 +685,7 @@
                     <div class="bg-white p-6 rounded-xl shadow-lg">
                         <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Haftalık Sipariş Analizi</h3>
                         <ul class="divide-y divide-gray-200">
-                            ${weeklyReportHtml || '<li class="text-gray-500 py-2">Henüz yeterli haftalık veri yok.</li>'}
+                            ${weeklyReportHtml || '<li class="text-gray-500 py-2">Henüz yeterli haftalık veri yok.</li></li>'}
                         </ul>
                     </div>
                 </div>
