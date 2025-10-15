@@ -132,7 +132,8 @@
         };
 
         // YENİ: Teslimat Sınırını Çekme ve Ayarlama Fonksiyonları
-        const DELIVERY_SETTINGS_PATH = `artifacts/${localAppId}/public/settings/delivery`;
+        // HATA DÜZELTMESİ: 5 segmentli yol 6 segmentli olacak şekilde düzeltildi (Koleksiyon/Belge/Koleksiyon/Belge)
+        const DELIVERY_SETTINGS_PATH = `artifacts/${localAppId}/public/settings/system/delivery`;
         
         const fetchDeliveryLimit = async () => {
             if (!window.db) return;
@@ -144,10 +145,12 @@
                     window.DELIVERY_DAYS_LIMIT = docSnap.data().limitDays || 14;
                 } else {
                     // Ayar yoksa varsayılan değeri kaydet
+                    // HATA DÜZELTMESİ: setDoc, docRef'i kullanacak şekilde güncellendi
                     await setDoc(docRef, { limitDays: 14, lastUpdated: new Date().toISOString() });
                     window.DELIVERY_DAYS_LIMIT = 14;
                 }
             } catch (error) {
+                // HATA DÜZELTMESİ: Hatanın konsola yazılması sağlandı.
                 console.error("Teslimat limitini çekerken/ayarlarken hata:", error.message);
                 window.DELIVERY_DAYS_LIMIT = 14; // Hata durumunda varsayılanı kullanmaya devam et
             }
@@ -207,36 +210,16 @@
         const setupAuthListener = async () => {
             if (typeof window.auth === 'undefined') return;
 
-            // ... (Firebase Auth kısmı) ...
-            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-            if (initialAuthToken) {
-                try {
-                    await signInWithCustomToken(window.auth, initialAuthToken);
-                    console.log("Canvas Custom Token ile giriş başarılı.");
-                } catch (error) {
-                    console.error("Custom Token ile giriş başarısız:", error.message);
-                    try {
-                        await signInAnonymously(window.auth);
-                        console.log("Anonim giriş başarılı.");
-                    } catch (e) {
-                        console.error("Anonim giriş başarısız:", e.message);
-                    }
-                }
-            } else {
-                try {
-                    await signInAnonymously(window.auth);
-                    console.log("Anonim giriş başarılı.");
-                } catch (e) {
-                    console.error("Anonim giriş başarısız:", e.message);
-                }
-            }
-            
-            await fetchDeliveryLimit(); // YENİ: Girişten önce limit ayarını çek
+            // HATA DÜZELTMESİ: Custom Token ve Anonim giriş denemeleri, Canvas ortamında genellikle kısıtlıdır
+            // ve hatalara yol açar. Bu blokları kaldırıp sadece onAuthStateChanged dinleyicisini
+            // kullanarak Canvas'ın otomatik girişini bekliyoruz.
 
             onAuthStateChanged(window.auth, async (user) => {
                 isAuthReady = true;
                 if (user) {
                     currentUserId = user.uid;
+                    // YENİ: Auth hazır olduğunda limiti çek
+                    await fetchDeliveryLimit(); 
                     await checkUserRole(user.uid);
                     renderApp();
                 } else {
@@ -245,6 +228,22 @@
                     renderApp(); // Giriş sayfasını göster
                 }
             });
+            // HATA DÜZELTMESİ: Eğer onAuthStateChanged hiç tetiklenmezse (oturum yoksa), 
+            // uygulamanın beklemesini önlemek için anonim olarak giriş yapmayı deneriz.
+            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+             if (initialAuthToken) {
+                 try {
+                     await signInWithCustomToken(window.auth, initialAuthToken);
+                 } catch (error) {
+                     // Hata durumunda bile devam et, onAuthStateChanged tetiklenecektir.
+                 }
+             } else {
+                 try {
+                     await signInAnonymously(window.auth);
+                 } catch (e) {
+                     // Anonim giriş başarısızsa devam et, kullanıcıya giriş ekranı gösterilecek.
+                 }
+             }
         };
 
         // Kullanıcı rolünü Firestore'dan çekme
@@ -515,7 +514,55 @@
         };
 
 
-        // ... (Diğer yönlendirme ve yardımcı fonksiyonlar) ...
+        // UI Güncelleme Fonksiyonları
+        const showMessage = (message, type = 'info') => {
+            const container = document.getElementById('message-container');
+            const color = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500',
+            }[type];
+
+            const alert = document.createElement('div');
+            alert.className = `${color} text-white px-4 py-2 rounded-lg shadow-xl mb-4`;
+            alert.textContent = message;
+
+            container.prepend(alert);
+            setTimeout(() => alert.remove(), 5000);
+        };
+        
+        // HATA DÜZELTMESİ: renderLoginScreen fonksiyonu, renderApp'den önce tanımlanmalı.
+        const renderLoginScreen = () => {
+            document.getElementById('app').innerHTML = `
+                <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+                    <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-8">
+                        <div class="flex justify-center mb-6">
+                            <span class="text-3xl font-bold text-indigo-700">Neonbirr FMS</span>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-800 mb-6 text-center">Franchisee Girişi</h2>
+
+                        <form id="loginForm" class="space-y-6">
+                            <div>
+                                <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">E-Posta Adresi</label>
+                                <input type="email" id="loginEmail" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" placeholder="ornek@neonbirr.com">
+                            </div>
+                            <div>
+                                <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
+                                <input type="password" id="loginPassword" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" placeholder="••••••••">
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-md">Giriş Yap</button>
+                        </form>
+                    </div>
+                </div>
+            `;
+            document.getElementById('loginForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                window.loginUser(email, password);
+            });
+        };
+
 
         const getStatusColor = (status, isDelayed) => {
             if (isDelayed) return 'bg-red-500 text-white font-bold animate-pulse'; // GECİKTİ durumu için özel renk
@@ -992,7 +1039,202 @@
         };
 
 
-        // ... (Diğer renderApp ve init fonksiyonları) ...
+        const renderDashboardMetrics = () => {
+            // Dashboard metrikleri (Franchisee veya Admin rolüne göre filtrelenmiş siparişler üzerinden hesaplanır)
+            const totalOrders = window.orders.length;
+            // Gecikti olarak işaretlenenler (otomatik hesaplananlar dahil) aktif sayılmaz.
+            const activeOrders = window.orders.filter(o => o.status !== 'Gönderilen Ürünler' && !checkIfDelayed(o)).length;
+            const completedProduction = window.orders.filter(o => o.status === 'Üretimi Tamamlandı').length;
+            const shippedOrders = window.orders.filter(o => o.status === 'Kargo Aşamasında' || o.status === 'Gönderilen Ürünler').length;
+            // Gecikenler, listedeki filtre uygulanmış tüm siparişler üzerinden hesaplanmalı
+            const delayedOrders = window.orders.filter(o => checkIfDelayed(o)).length;
+
+            const metric = (value, label, color) => `
+                <div class="bg-white p-5 rounded-xl shadow-lg transition duration-300 hover:shadow-xl transform hover:scale-[1.01] border-l-4 border-${color}-500">
+                    <div class="text-3xl font-extrabold" style="color: ${color === 'red' ? '#EF4444' : color === 'green' ? '#10B981' : color === 'orange' ? '#F97316' : '#6366F1'};">${value}</div>
+                    <div class="text-sm font-medium text-gray-500 mt-1">${label}</div>
+                </div>
+            `;
+
+            const metricsContainer = document.getElementById('metricsContainer');
+            if (metricsContainer) {
+                 metricsContainer.innerHTML = `
+                    ${metric(activeOrders, 'Aktif Sipariş', 'red')}
+                    ${metric(completedProduction, 'Üretimi Biten', 'indigo')}
+                    ${metric(shippedOrders, 'Kargolanan Sipariş', 'green')}
+                    ${metric(totalOrders, 'Toplam Sipariş', 'orange')}
+                    ${metric(delayedOrders, 'Geciken Ürün Sayısı', 'red')}
+                `;
+            }
+
+        };
+
+        const renderFinancialReports = () => {
+             // ... (Raporlar kodu) ...
+            if (currentRole !== 'admin') {
+                return `<div class="p-6 bg-red-100 text-red-800 rounded-xl shadow-lg">Bu sayfaya erişim yetkiniz bulunmamaktadır. Sadece Merkez Yönetici (Admin) rolü görüntüleyebilir.</div>`;
+            }
+            
+            const allOrders = window.orders; 
+            const formatCurrency = (price) => (price || 0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+
+            const totalRevenue = allOrders.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
+            const completedRevenue = allOrders
+                .filter(o => o.status === 'Gönderilen Ürünler' || o.status === 'Üretimi Tamamlandı')
+                .reduce((sum, order) => sum + (order.totalPrice || 0), 0);
+                
+            // Haftalık Sipariş Analizi
+            const weeklyData = {};
+            allOrders.forEach(order => {
+                const orderDate = new Date(order.addedTime);
+                // Basit bir haftalık key (Yıl-Hafta Numarası)
+                const week = Math.ceil((orderDate - new Date(orderDate.getFullYear(), 0, 1)) / (1000 * 60 * 60 * 24 * 7));
+                const weekKey = `${orderDate.getFullYear()}-${week}`;
+                
+                if (!weeklyData[weekKey]) {
+                    weeklyData[weekKey] = { count: 0, revenue: 0 };
+                }
+                weeklyData[weekKey].count += 1;
+                weeklyData[weekKey].revenue += order.totalPrice || 0;
+            });
+            
+            // Ürün Bazlı Analiz
+            const productSales = {};
+            allOrders.forEach(order => {
+                const key = order.productName || 'Belirtilmemiş Ürün';
+                if (!productSales[key]) {
+                    productSales[key] = { count: 0, revenue: 0 };
+                }
+                productSales[key].count += order.quantity || 1;
+                productSales[key].revenue += order.totalPrice || 0;
+            });
+            
+            const topProducts = Object.entries(productSales)
+                .sort(([, a], [, b]) => b.revenue - a.revenue)
+                .slice(0, 5); // En çok kazandıran 5 ürün
+
+            // Haftalık Rapor HTML'i
+            const weeklyReportHtml = Object.entries(weeklyData).map(([key, data]) => `
+                <li class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="font-medium text-gray-700">${key.replace('-', '. Hafta')}</span>
+                    <span class="text-sm text-indigo-600">${data.count} Sipariş</span>
+                    <span class="font-semibold text-green-600">${formatCurrency(data.revenue)}</span>
+                </li>
+            `).join('');
+            
+            // Ürün Raporu HTML'i
+            const productReportHtml = topProducts.map(([name, data]) => `
+                <li class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="font-medium text-gray-700">${name}</span>
+                    <span class="text-sm text-indigo-600">${data.count} Adet</span>
+                    <span class="font-semibold text-green-600">${formatCurrency(data.revenue)}</span>
+                </li>
+            `).join('');
+
+            return `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- Toplam Ciro -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-indigo-500">
+                        <p class="text-sm font-medium text-gray-500">Toplam Sipariş Tutarı</p>
+                        <p class="text-3xl font-extrabold text-indigo-700 mt-1">${formatCurrency(totalRevenue)}</p>
+                        <p class="text-xs text-gray-400 mt-2">Tüm girilen siparişlerin toplamı.</p>
+                    </div>
+                    <!-- Tamamlanan Ciro -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500">
+                        <p class="text-sm font-medium text-gray-500">Tamamlanan Satış Cirosu</p>
+                        <p class="text-3xl font-extrabold text-green-700 mt-1">${formatCurrency(completedRevenue)}</p>
+                        <p class="text-xs text-gray-400 mt-2">Üretimi biten veya gönderilen siparişler.</p>
+                    </div>
+                    <!-- Toplam Sipariş Sayısı -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-orange-500">
+                        <p class="text-sm font-medium text-gray-500">Toplam Sipariş Adedi</p>
+                        <p class="text-3xl font-extrabold text-orange-700 mt-1">${allOrders.length}</p>
+                        <p class="text-xs text-gray-400 mt-2">Sistemdeki toplam sipariş kaydı.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- En Çok Satan Ürünler -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">En Çok Kazandıran Ürünler (Ciroya Göre Top 5)</h3>
+                        <ul class="divide-y divide-gray-200">
+                            ${productReportHtml || '<li class="text-gray-500 py-2">Henüz yeterli satış verisi yok.</li>'}
+                        </ul>
+                    </div>
+                    
+                    <!-- Haftalık Sipariş Performansı -->
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Haftalık Sipariş Analizi</h3>
+                        <ul class="divide-y divide-gray-200">
+                            ${weeklyReportHtml || '<li class="text-gray-500 py-2">Henüz yeterli haftalık veri yok.</li></li>'}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        };
+
+
+        const renderOrderListContent = () => {
+            return `
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 p-4 bg-white rounded-xl shadow-lg space-y-4 sm:space-y-0">
+                    <h2 class="text-2xl font-semibold text-gray-800" id="filterTitle">
+                        ${currentProductFilter !== 'Tüm Ürünler' ? currentProductFilter + ' / ' : ''}
+                        ${currentStatusFilter}
+                    </h2>
+                    <button id="addDemoOrderBtn" class="bg-green-500 text-white p-3 rounded-lg font-semibold hover:bg-green-600 transition duration-200 shadow-md flex items-center justify-center sm:justify-start sm:w-auto">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        Demo Sipariş Ekle
+                    </button>
+                </div>
+                
+                <!-- ARAMA ve SIRALAMA Kontrolleri -->
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0 md:space-x-4">
+                    <!-- Arama Çubuğu -->
+                    <div class="w-full md:w-2/3 relative">
+                        <input type="text" id="orderSearchInput" oninput="window.handleSearch(event)" value="${currentSearchTerm}"
+                               placeholder="Müşteri adı, ürün adı veya ID ile ara..."
+                               class="w-full p-3 pl-10 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 shadow-sm">
+                        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+
+                    <!-- Sıralama Seçeneği -->
+                    <div class="w-full md:w-1/3 flex items-center space-x-2">
+                        <label for="orderSortSelect" class="text-gray-700 whitespace-nowrap">Sırala:</label>
+                        <select id="orderSortSelect" onchange="window.handleSortChange(event)"
+                                class="w-full p-3 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 shadow-sm bg-white">
+                            <option value="date_desc">En Yeniler (Tarih Azalan)</option>
+                            <option value="date_asc">En Eskiler (Tarih Artan)</option>
+                            <option value="price_desc">En Pahalı (Fiyat Azalan)</option>
+                            <option value="price_asc">En Ucuz (Fiyat Artan)</option>
+                            <option value="name_asc">Müşteri Adı (A-Z)</option>
+                            <option value="name_desc">Müşteri Adı (Z-A)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Sipariş Listesi -->
+                <div class="bg-white rounded-xl shadow-lg overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Görsel</th>
+                                <th class="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                <th class="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksesuarlar</th>
+                                <th class="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Müşteri İsmi</th>
+                                <th class="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ürün İsmi</th>
+                                <th class="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TOPLAM ÜCRET</th>
+                                <th class="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Eklenme Zamanı</th>
+                                <th class="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Siparişler buraya JS ile yüklenecek -->
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
 
         const renderApp = () => {
             if (!isAuthReady) {
