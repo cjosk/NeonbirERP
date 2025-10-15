@@ -20,7 +20,20 @@
 
         // Global Firebase ve Uygulama Ayarları
         setLogLevel('Debug');
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const realFirebaseConfig = {
+  apiKey: "AIzaSyAB0UsTKcsRu2JBm2bAYIDHTz_qLS1WATA",
+  authDomain: "neonbirfranchisee.firebaseapp.com",
+  projectId: "neonbirfranchisee",
+  storageBucket: "neonbirfranchisee.firebasestorage.app",
+  messagingSenderId: "51668421951",
+  appId: "1:51668421951:web:7d94456ebe84bba439578a",
+  measurementId: "G-501H1CJ59J"
+};
+// Canvas ortamındaki placeholder'ı kendi config'inizle değiştiriyoruz.
+const firebaseConfig = realFirebaseConfig; 
+// const appId değişkenini de bu config'den alabilirsiniz.
+const appId = firebaseConfig.projectId; // veya manuel atayın
+
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-neonbirr-app';
 
         if (Object.keys(firebaseConfig).length > 0) {
