@@ -33,7 +33,7 @@ const firebaseConfig = realFirebaseConfig;
 // const appId değişkenini de bu config'den alabilirsiniz.
 const appId = firebaseConfig.projectId; // veya manuel atayın
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-neonbirr-app';
+        let appId = typeof __app_id !== 'undefined' ? __app_id : 'default-neonbirr-app';
 
         if (Object.keys(firebaseConfig).length > 0) {
             window.app = initializeApp(firebaseConfig);
