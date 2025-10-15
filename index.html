@@ -159,9 +159,15 @@
             const userDocRef = doc(window.db, `artifacts/${localAppId}/users/${uid}/roles/info`);
             
             // Geliştirme kolaylığı için Admin Email adresi
-            const adminTestEmail = 'neonbirr@gmail.com'; // Eğer Admin hesabınızın email'i bu ise
+const adminTestEmail = 'admin@neonbirr.com'; // Eğer Admin hesabınızın email'i bu ise
 
-            try {
+// ...
+if (window.auth.currentUser && window.auth.currentUser.email === adminTestEmail) {
+    currentRole = 'admin';
+    console.warn(`Firestore'da rol bulunamadı. Test amaçlı Admin rolü atandı.`);
+} else {
+    currentRole = 'franchisee';
+// ...
                 const userDoc = await getDoc(userDocRef);
                 
                 if (userDoc.exists()) {
