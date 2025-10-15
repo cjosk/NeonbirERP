@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neonbirr FMS - Franchisee Yönetim Sistemi</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, query, where, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // Global Firebase ve Uygulama Ayarları
+        setLogLevel('Debug');
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-neonbirr-app';
+
+        if (Object.keys(firebaseConfig).length > 0) {
+            window.app = initializeApp(firebaseConfig);
+            window.db = getFirestore(window.app);
+            window.auth = getAuth(window.app);
+        } else {
+            console.error("Firebase yapılandırması bulunamadı. Uygulama başlatılamadı.");
+        }
+
+        let currentRole = null;
+        let currentUserId = null;
+        let isAuthReady = false;
+
+        // Kullanıcı yetkilendirme ve rol kontrolü
+        const setupAuthListener = async () => {
+            if (typeof window.auth === 'undefined') return;
+
+            // Canvas Ortamı için Custom Token ile giriş yapmayı dene
+            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+            if (initialAuthToken) {
+                try {
+                    await signInWithCustomToken(window.auth, initialAuthToken);
+                    console.log("Canvas Custom Token ile giriş başarılı.");
+                } catch (error) {
+                    console.error("Custom Token ile giriş başarısız:", error.message);
+                    // Düşme durumunda anonim giriş yap
+                    try {
+                        await signInAnonymously(window.auth);
+                        console.log("Anonim giriş başarılı.");
+                    } catch (e) {
+                        console.error("Anonim giriş başarısız:", e.message);
+                    }
+                }
+            } else {
+                // Token yoksa anonim giriş yap
+                try {
+                    await signInAnonymously(window.auth);
+                    console.log("Anonim giriş başarılı.");
+                } catch (e) {
+                    console.error("Anonim giriş başarısız:", e.message);
+                }
+            }
+
+            onAuthStateChanged(window.auth, async (user) => {
+                isAuthReady = true;
+                if (user) {
+                    currentUserId = user.uid;
+                    await checkUserRole(user.uid);
+                    renderApp();
+                } else {
+                    currentUserId = null;
+                    currentRole = null;
+                    renderApp(); // Giriş sayfasını göster
+                }
+            });
+        };
+
+        // Kullanıcı rolünü Firestore'dan çekme
+        const checkUserRole = async (uid) => {
+            if (!window.db) return;
+            // Rol bilgisi /artifacts/{appId}/users/{userId}/roles/info içinde tutulacak.
+            const userDocRef = doc(window.db, `artifacts/${appId}/users/${uid}/roles/info`);
+            try {
+                const userDoc = await getDoc(userDocRef);
+                if (userDoc.exists()) {
+                    currentRole = userDoc.data().role || 'franchisee'; // Varsayılan rol franchisee
+                    console.log(`Kullanıcı rolü tespit edildi: ${currentRole}`);
+                } else {
+                    currentRole = 'franchisee';
+                    console.warn("Kullanıcı rolü Firestore'da bulunamadı, varsayılan 'franchisee' rolü atandı.");
+                }
+            } catch (error) {
+                console.error("Rol bilgisi çekilirken hata:", error.message);
+                currentRole = 'guest';
+            }
+        };
+
+        window.loginUser = async (email, password) => {
+            try {
+                const userCredential = await signInWithEmailAndPassword(window.auth, email, password);
+                showMessage('Giriş başarılı! Yönlendiriliyorsunuz...', 'success');
+            } catch (error) {
+                console.error("Giriş hatası:", error);
+                showMessage(`Giriş başarısız: ${error.message}`, 'error');
+            }
+        };
+
+        window.logoutUser = async () => {
+            try {
+                await signOut(window.auth);
+                showMessage('Çıkış yapıldı.', 'info');
+            } catch (error) {
+                console.error("Çıkış hatası:", error);
+            }
+        };
+
+        window.createUserAccount = async (email, password, role, name, franchiseName) => {
+            if (!currentUserId || currentRole !== 'admin') {
+                showMessage('Bu işlemi yapmaya yetkiniz yok.', 'error');
+                return;
+            }
+
+            try {
+                // 1. Kullanıcıyı Auth'a kaydet (Admin bu kullanıcı için bir şifre belirler)
+                const userCredential = await createUserWithEmailAndPassword(window.auth, email, password);
+                const newUid = userCredential.user.uid;
+
+                // 2. Rolü ve ek bilgileri Firestore'a kaydet
+                // Not: Admin sadece yeni kullanıcıları oluşturmak için kendi yetkisini kullanır.
+                const userDocRef = doc(window.db, `artifacts/${appId}/users/${newUid}/roles/info`);
+
+                await setDoc(userDocRef, {
+                    email: email,
+                    role: role,
+                    name: name,
+                    franchiseName: franchiseName,
+                    createdAt: new Date(),
+                    createdBy: window.auth.currentUser.email
+                });
+
+                showMessage(`${role} rolüyle kullanıcı başarıyla oluşturuldu: ${name} (${email})`, 'success');
+                // Formu temizle
+                document.getElementById('createUserForm').reset();
+            } catch (error) {
+                console.error("Kullanıcı oluşturma hatası:", error);
+                showMessage(`Kullanıcı oluşturma başarısız: ${error.message}`, 'error');
+                // Not: Eğer createUserWithEmailAndPassword hatası alırsak, setDoc çalışmayacaktır.
+            }
+        };
+
+        // Sipariş Verilerini Çekme ve Dinleme (Sadece Örnek)
+        window.orders = [];
+
+        window.setupOrderListener = () => {
+            if (!window.db || !currentUserId || !currentRole) return;
+
+            // Franchisee rolü için sadece kendi siparişlerini getir
+            const ordersCollectionRef = collection(window.db, `artifacts/${appId}/public/data/orders`);
+            let q;
+
+            if (currentRole === 'admin') {
+                // Admin tüm siparişleri görür
+                q = ordersCollectionRef;
+            } else if (currentRole === 'franchisee') {
+                // Franchisee sadece kendi siparişlerini görür.
+                // Gerçek uygulamada, kullanıcı rolleri oluştururken bu bilgiyi Franchisee dokümanına kaydetmeliyiz.
+                // Şimdilik test amaçlı tüm siparişleri gösterelim ya da bir test franchisee ID'si kullanalım.
+                // Güvenlik kurallarını düşünerek, şimdilik sadece 'franchisee-test' atamasını baz alalım.
+                 q = query(ordersCollectionRef, where("franchiseeId", "==", currentUserId));
+                 // Demo için: q = ordersCollectionRef;
+                 q = ordersCollectionRef;
+
+            } else {
+                return; // Diğer roller için siparişleri gösterme
+            }
+
+            onSnapshot(q, (snapshot) => {
+                window.orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderOrderList();
+                renderDashboardMetrics();
+            }, (error) => {
+                console.error("Siparişler dinlenirken hata oluştu:", error);
+            });
+        };
+
+        // Örnek Sipariş Ekleme Fonksiyonu
+        window.addDemoOrder = async () => {
+             if (!window.db || !currentUserId || currentRole === 'guest') {
+                showMessage('Giriş yapmanız veya yetkili olmanız gerekiyor.', 'error');
+                return;
+            }
+
+            const statuses = ["Çizilmeyi Bekleyenler", "Çizildi", "Üretime Alındı", "Kargo Aşamasında", "Gönderilen Ürünler", "Gecikti"];
+            const status = statuses[Math.floor(Math.random() * statuses.length)];
+            const accessories = ["Duvar Montaj Kiti", "Pil Kutusu", "Uzakatan Kumanda", "Zincir Montaj Kiti"];
+
+            const newOrder = {
+                customerName: `Müşteri ${Math.floor(Math.random() * 1000)}`,
+                productName: `Neon Tabela ${Math.floor(Math.random() * 5)}`,
+                quantity: Math.floor(Math.random() * 5) + 1,
+                orderDate: new Date().toISOString().split('T')[0],
+                status: status,
+                accessories: accessories.slice(0, Math.floor(Math.random() * accessories.length) + 1).join(', '),
+                franchiseeId: currentUserId, // Siparişi ekleyen kullanıcının ID'si
+                addedTime: new Date().toISOString(),
+                orderID: `NEON${Date.now().toString().slice(-6)}`,
+                // Fotoğraflardan alınan mock görsel URL'si
+                imageUrl: `https://placehold.co/40x40/FF5A36/ffffff?text=N`,
+            };
+
+             try {
+                // Public data collection: /artifacts/{appId}/public/data/orders
+                await addDoc(collection(window.db, `artifacts/${appId}/public/data/orders`), newOrder);
+                showMessage('Örnek sipariş başarıyla eklendi.', 'success');
+            } catch (error) {
+                console.error("Örnek sipariş eklenirken hata:", error);
+                showMessage(`Sipariş ekleme başarısız: ${error.message}`, 'error');
+            }
+        };
+
+        // UI Güncelleme Fonksiyonları
+        const showMessage = (message, type = 'info') => {
+            const container = document.getElementById('message-container');
+            const color = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500',
+            }[type];
+
+            const alert = document.createElement('div');
+            alert.className = `${color} text-white px-4 py-2 rounded-lg shadow-xl mb-4`;
+            alert.textContent = message;
+
+            container.prepend(alert);
+            setTimeout(() => alert.remove(), 5000);
+        };
+
+        const renderLoginScreen = () => {
+            document.getElementById('app').innerHTML = `
+                <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+                    <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-8">
+                        <div class="flex justify-center mb-6">
+                            <span class="text-3xl font-bold text-indigo-700">Neonbirr FMS</span>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-800 mb-6 text-center">Franchisee Girişi</h2>
+
+                        <form id="loginForm" class="space-y-6">
+                            <div>
+                                <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">E-Posta Adresi</label>
+                                <input type="email" id="loginEmail" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" placeholder="ornek@neonbirr.com">
+                            </div>
+                            <div>
+                                <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
+                                <input type="password" id="loginPassword" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" placeholder="••••••••">
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-md">Giriş Yap</button>
+                        </form>
+                    </div>
+                </div>
+            `;
+            document.getElementById('loginForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                window.loginUser(email, password);
+            });
+        };
+
+        const renderAdminUserCreator = () => {
+            if (currentRole !== 'admin') return '';
+
+            return `
+                <div class="p-6 bg-white rounded-xl shadow-lg mb-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Yeni Kullanıcı Oluştur (Admin)</h3>
+                    <form id="createUserForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="col-span-1">
+                            <label for="newEmail" class="block text-sm font-medium text-gray-700 mb-1">E-Posta</label>
+                            <input type="email" id="newEmail" required class="w-full p-2 border border-gray-300 rounded-lg" placeholder="yeni.kullanici@neonbirr.com">
+                        </div>
+                        <div class="col-span-1">
+                            <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
+                            <input type="password" id="newPassword" required class="w-full p-2 border border-gray-300 rounded-lg" placeholder="min 6 karakter">
+                        </div>
+                        <div class="col-span-1">
+                            <label for="newName" class="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
+                            <input type="text" id="newName" required class="w-full p-2 border border-gray-300 rounded-lg" placeholder="Adı Soyadı">
+                        </div>
+                        <div class="col-span-1">
+                            <label for="newFranchiseName" class="block text-sm font-medium text-gray-700 mb-1">Franchise Adı / Departman</label>
+                            <input type="text" id="newFranchiseName" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="Neonbirr Kadıköy / Tasarım">
+                        </div>
+                        <div class="col-span-1">
+                            <label for="newRole" class="block text-sm font-medium text-gray-700 mb-1">Rol Seçimi</label>
+                            <select id="newRole" required class="w-full p-2 border border-gray-300 rounded-lg">
+                                <option value="franchisee">Franchisee (Mağaza)</option>
+                                <option value="admin">Admin (Merkez Yönetici)</option>
+                                <option value="designer">Tasarımcı</option>
+                            </select>
+                        </div>
+                        <div class="col-span-2 flex justify-end">
+                            <button type="submit" class="bg-indigo-600 text-white p-2 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-md w-full md:w-auto">Kullanıcıyı Oluştur</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+        };
+
+        const renderDashboardMetrics = () => {
+            const totalOrders = window.orders.length;
+            const activeOrders = window.orders.filter(o => o.status !== 'Gönderilen Ürünler').length;
+            const completedProduction = window.orders.filter(o => o.status === 'Üretimi Tamamlandı').length;
+            const shippedOrders = window.orders.filter(o => o.status === 'Kargo Aşamasında' || o.status === 'Gönderilen Ürünler').length;
+            const delayedOrders = window.orders.filter(o => o.status === 'Gecikti').length;
+
+            const metric = (value, label, color) => `
+                <div class="bg-white p-5 rounded-xl shadow-lg transition duration-300 hover:shadow-xl transform hover:scale-[1.01] border-l-4 border-${color}-500">
+                    <div class="text-3xl font-extrabold" style="color: ${color === 'red' ? '#EF4444' : color === 'green' ? '#10B981' : color === 'orange' ? '#F97316' : '#6366F1'};">${value}</div>
+                    <div class="text-sm font-medium text-gray-500 mt-1">${label}</div>
+                </div>
+            `;
+
+            document.getElementById('metricsContainer').innerHTML = `
+                ${metric(activeOrders, 'Aktif Sipariş', 'red')}
+                ${metric(completedProduction, 'Üretimi Biten', 'indigo')}
+                ${metric(shippedOrders, 'Kargolanan Sipariş', 'green')}
+                ${metric(totalOrders, 'Toplam Sipariş', 'orange')}
+                ${metric(delayedOrders, 'Geciken Ürün Sayısı', 'red')}
+            `;
+        };
+
+        const getStatusColor = (status) => {
+            switch (status) {
+                case 'Çizilmeyi Bekleyenler': return 'bg-yellow-100 text-yellow-800';
+                case 'Çizildi': return 'bg-blue-100 text-blue-800';
+                case 'Üretime Alındı': return 'bg-indigo-100 text-indigo-800';
+                case 'Üretimi Tamamlandı': return 'bg-green-100 text-green-800';
+                case 'Kargo Aşamasında': return 'bg-purple-100 text-purple-800';
+                case 'Gönderilen Ürünler': return 'bg-gray-100 text-gray-800';
+                case 'Gecikti': return 'bg-red-100 text-red-800 font-bold';
+                default: return 'bg-gray-100 text-gray-600';
+            }
+        };
+
+        const renderOrderList = () => {
+            const tableBody = document.getElementById('orderTableBody');
+            if (!tableBody) return;
+
+            if (window.orders.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-gray-500">Henüz sipariş bulunmamaktadır.</td></tr>`;
+                return;
+            }
+
+            const html = window.orders.map(order => `
+                <tr class="border-b hover:bg-gray-50 transition duration-100">
+                    <td class="p-3">
+                        <img src="${order.imageUrl}" alt="Ürün Görseli" class="w-10 h-10 rounded-lg object-cover shadow-sm">
+                    </td>
+                    <td class="p-3 whitespace-nowrap">
+                        <span class="px-3 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}">
+                            ${order.status}
+                        </span>
+                    </td>
+                    <td class="p-3 text-sm text-gray-700 whitespace-nowrap">${order.accessories || 'Yok'}</td>
+                    <td class="p-3 font-semibold text-gray-900 whitespace-nowrap">${order.customerName}</td>
+                    <td class="p-3 text-sm text-gray-700">${order.productName}</td>
+                    <td class="p-3 text-sm text-gray-500 whitespace-nowrap">${new Date(order.addedTime).toLocaleDateString('tr-TR')}</td>
+                    <td class="p-3 text-sm text-gray-500 whitespace-nowrap">${order.orderID}</td>
+                </tr>
+            `).join('');
+
+            tableBody.innerHTML = html;
+        };
+
+        const renderApp = () => {
+            if (!isAuthReady) {
+                document.getElementById('app').innerHTML = `
+                    <div class="min-h-screen flex items-center justify-center bg-gray-100">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-gray-700">Oturum kontrol ediliyor...</span>
+                    </div>
+                `;
+                return;
+            }
+
+            if (!currentUserId || currentRole === 'guest') {
+                renderLoginScreen();
+                return;
+            }
+
+            // Ana Uygulama Düzeni
+            document.getElementById('app').innerHTML = `
+                <div class="flex h-screen bg-gray-50">
+                    <!-- Sol Navigasyon Paneli (Sidebar) -->
+                    <div class="hidden md:flex flex-col w-64 bg-gray-800 text-white shadow-xl">
+                        <div class="p-6 border-b border-gray-700 flex items-center">
+                            <span class="text-xl font-extrabold tracking-widest text-indigo-400">NEONBIRR FMS</span>
+                        </div>
+                        <nav class="flex-grow p-4 space-y-2">
+                            <a href="#" class="flex items-center p-3 text-sm font-medium rounded-lg bg-indigo-600 text-white shadow-lg transition duration-200">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l-2-2m2 2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                                Dashboard
+                            </a>
+                            ${currentRole === 'admin' ? `
+                                <a href="#admin" class="flex items-center p-3 text-sm font-medium rounded-lg text-gray-300 hover:bg-gray-700 transition duration-200">
+                                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354l.707.707A2.001 2.001 0 0115 7.172V19a2 2 0 01-2 2H5a2 2 0 01-2-2V7.172a2.001 2.001 0 011.293-1.811l.707-.707m0 0V5a2 2 0 012-2h4a2 2 0 012 2v1.354z"></path></svg>
+                                    Admin Yönetimi
+                                </a>` : ''}
+                            <a href="#orders" class="flex items-center p-3 text-sm font-medium rounded-lg text-gray-300 hover:bg-gray-700 transition duration-200">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5h6"></path></svg>
+                                Tüm Siparişler
+                            </a>
+                        </nav>
+                        <div class="p-4 border-t border-gray-700">
+                            <p class="text-xs text-gray-400">Kullanıcı: ${window.auth.currentUser.email}</p>
+                            <p class="text-xs font-semibold text-indigo-400">Rol: ${currentRole.toUpperCase()}</p>
+                            <button id="logoutBtn" class="mt-2 w-full p-2 text-sm bg-red-500 rounded-lg hover:bg-red-600 transition duration-200">Çıkış Yap</button>
+                        </div>
+                    </div>
+
+                    <!-- Ana İçerik Alanı -->
+                    <main class="flex-1 overflow-y-auto p-4 md:p-8">
+                        <h1 class="text-3xl font-bold text-gray-900 mb-6">Yönetim Paneli</h1>
+
+                        <!-- Admin Kullanıcı Oluşturma Modülü -->
+                        <div id="adminCreatorContainer">
+                            ${renderAdminUserCreator()}
+                        </div>
+                        
+                        <!-- Metrikler -->
+                        <div id="metricsContainer" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+                            <!-- Metrikler buraya JS ile yüklenecek -->
+                        </div>
+
+                        <!-- İşlemler -->
+                        <div class="flex justify-between items-center mb-6 p-4 bg-white rounded-xl shadow-lg">
+                            <h2 class="text-2xl font-semibold text-gray-800">Sipariş Takibi</h2>
+                            <button id="addOrderBtn" class="bg-green-500 text-white p-3 rounded-lg font-semibold hover:bg-green-600 transition duration-200 shadow-md flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                Örnek Sipariş Ekle
+                            </button>
+                        </div>
+
+                        <!-- Sipariş Listesi -->
+                        <div class="bg-white rounded-xl shadow-lg overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Görsel</th>
+                                        <th class="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                        <th class="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksesuarlar</th>
+                                        <th class="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Müşteri İsmi</th>
+                                        <th class="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ürün İsmi</th>
+                                        <th class="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Eklenme Zamanı</th>
+                                        <th class="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="orderTableBody" class="bg-white divide-y divide-gray-200">
+                                    <!-- Siparişler buraya JS ile yüklenecek -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </main>
+                </div>
+            `;
+            
+            // Olay Dinleyicilerini Ekle
+            document.getElementById('logoutBtn').addEventListener('click', window.logoutUser);
+            document.getElementById('addOrderBtn').addEventListener('click', window.addDemoOrder);
+
+            if (currentRole === 'admin') {
+                document.getElementById('createUserForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('newEmail').value;
+                    const password = document.getElementById('newPassword').value;
+                    const role = document.getElementById('newRole').value;
+                    const name = document.getElementById('newName').value;
+                    const franchiseName = document.getElementById('newFranchiseName').value;
+                    window.createUserAccount(email, password, role, name, franchiseName);
+                });
+            }
+
+            // Verileri Yükle
+            window.setupOrderListener();
+        };
+
+        // Uygulamayı Başlat
+        window.onload = setupAuthListener;
+    </script>
+</head>
+<body class="bg-gray-50">
+    <div id="message-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+    <div id="app">
+        <!-- Uygulama içeriği buraya yüklenecek -->
+    </div>
+</body>
+</html>
