@@ -11,16 +11,23 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body { font-family: 'Inter', sans-serif; }
 
-        /* Custom scrollbar for dark sidebar */
+        /* Neonbirr Turuncu rengini Tailwind'e ekleyelim */
+        .text-neonbirr { color: #FF5A36; }
+        .bg-neonbirr { background-color: #FF5A36; }
+        .hover\:bg-neonbirr-dark:hover { background-color: #e65231; }
+        .border-neonbirr { border-color: #FF5A36; }
+
+
+        /* Custom scrollbar for light sidebar */
         .sidebar-nav::-webkit-scrollbar {
             width: 6px;
         }
         .sidebar-nav::-webkit-scrollbar-thumb {
-            background-color: #4a5568; /* Gray-600 */
+            background-color: #d1d5db; /* Gray-300 */
             border-radius: 3px;
         }
         .sidebar-nav::-webkit-scrollbar-track {
-            background-color: #2d3748; /* Gray-800 */
+            background-color: #f3f4f6; /* Gray-100 */
         }
         /* Görsel Yükleme Butonunun Gözükmesi için stil */
         input[type="file"]::file-selector-button {
@@ -137,20 +144,21 @@
                 <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
                     <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-8">
                         <div class="flex justify-center mb-6">
-                            <span class="text-3xl font-bold text-indigo-700">Neonbirr FMS</span>
+                            <!-- YENİ LOGO -->
+                            <img src="https://www.neonbirr.cy/cdn/shop/files/logo.png?v=1759156134&width=90" alt="Neonbirr Logo" class="h-10">
                         </div>
                         <h2 class="text-xl font-semibold text-gray-800 mb-6 text-center">Franchisee Girişi</h2>
 
                         <form id="loginForm" class="space-y-6">
                             <div>
                                 <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">E-Posta Adresi</label>
-                                <input type="email" id="loginEmail" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" placeholder="ornek@neonbirr.com">
+                                <input type="email" id="loginEmail" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr transition duration-150" placeholder="ornek@neonbirr.com">
                             </div>
                             <div>
                                 <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
-                                <input type="password" id="loginPassword" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" placeholder="••••••••">
+                                <input type="password" id="loginPassword" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr transition duration-150" placeholder="••••••••">
                             </div>
-                            <button type="submit" class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-md">Giriş Yap</button>
+                            <button type="submit" class="w-full bg-neonbirr text-white p-3 rounded-lg font-semibold hover:bg-neonbirr-dark transition duration-200 shadow-md">Giriş Yap</button>
                         </form>
                     </div>
                 </div>
@@ -520,11 +528,11 @@
             navLinks.forEach(link => {
                 const linkPage = link.getAttribute('data-page');
                 if (linkPage === page) {
-                    link.classList.remove('text-gray-300', 'hover:bg-gray-700');
-                    link.classList.add('bg-indigo-600', 'text-white', 'shadow-lg');
+                    link.classList.remove('text-gray-700', 'hover:bg-gray-200'); // Eski dark/indigo renkleri yerine yeni light/turuncu renkler
+                    link.classList.add('bg-neonbirr', 'text-white', 'shadow-md');
                 } else {
-                    link.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg');
-                    link.classList.add('text-gray-300', 'hover:bg-gray-700');
+                    link.classList.remove('bg-neonbirr', 'text-white', 'shadow-md');
+                    link.classList.add('text-gray-700', 'hover:bg-gray-200');
                 }
             });
 
@@ -676,19 +684,19 @@
         const renderOrderForm = () => {
              return `
                 <div class="p-6 bg-white rounded-xl shadow-lg mb-8">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">Yeni Sipariş Girişi</h2>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3 border-gray-200">Yeni Sipariş Girişi</h2>
                     <form id="addOrderForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         <!-- Müşteri Bilgileri -->
                         <div class="col-span-1">
                             <label for="customerName" class="block text-sm font-medium text-gray-700 mb-1">Müşteri İsmi*</label>
-                            <input type="text" id="customerName" name="customerName" required class="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ad Soyad veya Firma Adı">
+                            <input type="text" id="customerName" name="customerName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr transition" placeholder="Ad Soyad veya Firma Adı">
                         </div>
                         
                         <!-- GÜNCELLENDİ: Sadece Dosya Yükleme Aktif -->
                         <div class="col-span-1">
                             <label for="productImageFile" class="block text-sm font-medium text-gray-700 mb-1">Ürün Görseli Yükle*</label>
-                            <input type="file" id="productImageFile" name="productImageFile" accept="image/*" class="w-full p-2 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" required>
+                            <input type="file" id="productImageFile" name="productImageFile" accept="image/*" class="w-full p-3 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-neonbirr hover:file:bg-gray-200" required>
                             <p class="text-xs text-gray-500 mt-1">Lütfen siparişe ait görseli seçin. Yükleme kaydetme anında gerçekleşir.</p>
                         </div>
                         <!-- URL alanı kaldırıldı -->
@@ -696,21 +704,21 @@
                         <!-- Ürün Detayları -->
                         <div class="col-span-1">
                             <label for="productName" class="block text-sm font-medium text-gray-700 mb-1">Ürün İsmi (Örn: 90x90 5 Yıldız)</label>
-                            <input type="text" id="productName" name="productName" required class="w-full p-2 border border-gray-300 rounded-lg" placeholder="Ürün ölçüsü ve kısa adı">
+                            <input type="text" id="productName" name="productName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
                         <div class="col-span-1">
                             <label for="quantity" class="block text-sm font-medium text-gray-700 mb-1">Adet*</label>
-                            <input type="number" id="quantity" name="quantity" required min="1" value="1" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <input type="number" id="quantity" name="quantity" required min="1" value="1" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
                         
                         <!-- Fiyat Bilgisi -->
                         <div class="col-span-1">
                             <label for="productPrice" class="block text-sm font-medium text-gray-700 mb-1">Ürün Fiyatı (TL)*</label>
-                            <input type="number" id="productPrice" name="productPrice" required min="1" step="0.01" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="Birim fiyatı">
+                            <input type="number" id="productPrice" name="productPrice" required min="1" step="0.01" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr" placeholder="Birim fiyatı">
                         </div>
                         <div class="col-span-1">
                             <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                            <select id="category" name="category" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <select id="category" name="category" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                                 <option value="neon_standart">Canvas Neon</option>
                                 <option value="baskili">Baskılı Ürün</option>
                                 <option value="seffaf">Şeffaf Ürün</option>
@@ -724,11 +732,11 @@
                         <!-- Tarih ve Seçenekler -->
                         <div class="col-span-1">
                             <label for="orderDate" class="block text-sm font-medium text-gray-700 mb-1">Sipariş Tarihi*</label>
-                            <input type="date" id="orderDate" name="orderDate" required value="${new Date().toISOString().split('T')[0]}" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <input type="date" id="orderDate" name="orderDate" required value="${new Date().toISOString().split('T')[0]}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
                         <div class="col-span-1">
                             <label for="deliveryOption" class="block text-sm font-medium text-gray-700 mb-1">Teslim Seçeneği</label>
-                            <select id="deliveryOption" name="deliveryOption" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <select id="deliveryOption" name="deliveryOption" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                                 <option value="standard">Standart Teslimat</option>
                                 <option value="urgent">Acil Teslimat (Ek Ücretli)</option>
                                 <option value="pickup">Mağazadan Teslim</option>
@@ -736,7 +744,7 @@
                         </div>
                         <div class="col-span-1">
                             <label for="deliveryDate" class="block text-sm font-medium text-gray-700 mb-1">Hedef Teslim Tarihi</label>
-                            <input type="date" id="deliveryDate" name="deliveryDate" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <input type="date" id="deliveryDate" name="deliveryDate" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
                         <div class="col-span-1">
                              <!-- Boş alan bırakıldı - düzenli grid için -->
@@ -745,21 +753,21 @@
                         <!-- Aksesuarlar -->
                         <div class="col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Aksesuarlar</label>
-                            <div class="flex flex-wrap gap-4 p-3 bg-gray-50 rounded-lg border">
+                            <div class="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                                 <label class="inline-flex items-center">
-                                    <input type="checkbox" name="accessories" value="Duvar Montaj Kiti" class="form-checkbox text-indigo-600 rounded">
+                                    <input type="checkbox" name="accessories" value="Duvar Montaj Kiti" class="form-checkbox text-neonbirr rounded-md focus:ring-neonbirr">
                                     <span class="ml-2 text-sm text-gray-700">Duvar Montaj Kiti</span>
                                 </label>
                                 <label class="inline-flex items-center">
-                                    <input type="checkbox" name="accessories" value="Pil Kutusu" class="form-checkbox text-indigo-600 rounded">
+                                    <input type="checkbox" name="accessories" value="Pil Kutusu" class="form-checkbox text-neonbirr rounded-md focus:ring-neonbirr">
                                     <span class="ml-2 text-sm text-gray-700">Pil Kutusu</span>
                                 </label>
                                 <label class="inline-flex items-center">
-                                    <input type="checkbox" name="accessories" value="Uzakatan Kumanda" class="form-checkbox text-indigo-600 rounded">
+                                    <input type="checkbox" name="accessories" value="Uzakatan Kumanda" class="form-checkbox text-neonbirr rounded-md focus:ring-neonbirr">
                                     <span class="ml-2 text-sm text-gray-700">Uzakatan Kumanda</span>
                                 </label>
                                 <label class="inline-flex items-center">
-                                    <input type="checkbox" name="accessories" value="Zincir Montaj Kiti" class="form-checkbox text-indigo-600 rounded">
+                                    <input type="checkbox" name="accessories" value="Zincir Montaj Kiti" class="form-checkbox text-neonbirr rounded-md focus:ring-neonbirr">
                                     <span class="ml-2 text-sm text-gray-700">Zincir Montaj Kiti</span>
                                 </label>
                             </div>
@@ -768,13 +776,13 @@
                         <!-- Sipariş Notu -->
                         <div class="col-span-2">
                             <label for="orderNote" class="block text-sm font-medium text-gray-700 mb-1">Sipariş Notu</label>
-                            <textarea id="orderNote" name="orderNote" rows="3" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" placeholder="Müşteriye özel talepler, renk kodları vb."></textarea>
+                            <textarea id="orderNote" name="orderNote" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr" placeholder="Müşteriye özel talepler, renk kodları vb."></textarea>
                         </div>
 
                         <!-- Butonlar -->
                         <div class="col-span-2 flex justify-end space-x-4 pt-4 border-t">
-                            <button type="reset" class="bg-gray-300 text-gray-800 p-3 rounded-lg font-semibold hover:bg-gray-400 transition duration-200 shadow-md">Sıfırla</button>
-                            <button type="submit" class="bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-md flex items-center">
+                            <button type="reset" class="bg-gray-200 text-gray-700 p-3 rounded-lg font-semibold hover:bg-gray-300 transition duration-200 shadow-md">Sıfırla</button>
+                            <button type="submit" class="bg-neonbirr text-white p-3 rounded-lg font-semibold hover:bg-neonbirr-dark transition duration-200 shadow-md flex items-center">
                                 Siparişi Kaydet
                             </button>
                         </div>
@@ -789,14 +797,14 @@
             
             return `
                 <div class="p-6 bg-white rounded-xl shadow-lg mb-8">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">Siparişi Düzenle: <span class="text-indigo-600">${order.orderID}</span></h2>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">Siparişi Düzenle: <span class="text-neonbirr">${order.orderID}</span></h2>
                     
                     <form id="editOrderForm" onsubmit="window.updateOrder(event); return false;" class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         <!-- Sipariş Durumu -->
                         <div class="col-span-2">
                             <label for="editStatus" class="block text-sm font-medium text-gray-700 mb-1">Sipariş Durumu</label>
-                            <select id="editStatus" name="status" class="w-full p-2 border border-gray-300 rounded-lg bg-yellow-50 focus:ring-indigo-500 focus:border-indigo-500 font-semibold text-gray-800">
+                            <select id="editStatus" name="status" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-neonbirr focus:border-neonbirr font-semibold text-gray-800">
                                 ${ORDER_STATUSES.map(s => `<option value="${s}" ${order.status === s ? 'selected' : ''}>${s}</option>`).join('')}
                             </select>
                             <p class="text-xs text-gray-500 mt-1">Bu alan merkez ofis tarafından takip edilmektedir.</p>
@@ -805,13 +813,13 @@
                         <!-- Müşteri Bilgileri -->
                         <div class="col-span-1">
                             <label for="editCustomerName" class="block text-sm font-medium text-gray-700 mb-1">Müşteri İsmi*</label>
-                            <input type="text" id="editCustomerName" name="customerName" required value="${order.customerName}" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                            <input type="text" id="editCustomerName" name="customerName" required value="${order.customerName}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
                         
                         <!-- GÜNCELLENDİ: Dosya Yükleme (Düzenleme) -->
                         <div class="col-span-1">
                             <label for="editProductImageFile" class="block text-sm font-medium text-gray-700 mb-1">Yeni Görsel Yükle</label>
-                            <input type="file" id="editProductImageFile" name="editProductImageFile" accept="image/*" class="w-full p-2 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                            <input type="file" id="editProductImageFile" name="editProductImageFile" accept="image/*" class="w-full p-3 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-neonbirr hover:file:bg-gray-200">
                             <p class="text-xs text-gray-500 mt-1">Yeni dosya seçilmezse mevcut görsel kalır.</p>
                             <!-- Mevcut görsel URL'sini gizli tut, güncellemede kullanmak için -->
                             <input type="hidden" name="currentImageUrl" value="${order.imageUrl}"> 
@@ -820,28 +828,28 @@
                         <!-- Ürün Detayları -->
                         <div class="col-span-1">
                             <label for="editProductName" class="block text-sm font-medium text-gray-700 mb-1">Ürün İsmi (Örn: 90x90 5 Yıldız)</label>
-                            <input type="text" id="editProductName" name="productName" required value="${order.productName}" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <input type="text" id="editProductName" name="productName" required value="${order.productName}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
                         <div class="col-span-1">
                              <!-- Görsel Önizleme -->
                              <label class="block text-sm font-medium text-gray-700 mb-1">Mevcut Görsel</label>
-                             <img src="${order.imageUrl}" onerror="this.onerror=null;this.src='https://placehold.co/50x50/000000/ffffff?text=X'" alt="Mevcut Görsel" class="w-16 h-16 rounded-lg object-cover shadow-sm">
+                             <img src="${order.imageUrl}" onerror="this.onerror=null;this.src='https://placehold.co/50x50/000000/ffffff?text=X'" alt="Mevcut Görsel" class="w-16 h-16 rounded-lg object-cover shadow-sm border border-gray-200">
                         </div>
                         
                         <!-- Fiyat ve Adet -->
                         <div class="col-span-1">
                             <label for="editQuantity" class="block text-sm font-medium text-gray-700 mb-1">Adet*</label>
-                            <input type="number" id="editQuantity" name="quantity" required min="1" value="${order.quantity}" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <input type="number" id="editQuantity" name="quantity" required min="1" value="${order.quantity}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
                         <div class="col-span-1">
                             <label for="editProductPrice" class="block text-sm font-medium text-gray-700 mb-1">Ürün Fiyatı (TL)*</label>
-                            <input type="number" id="editProductPrice" name="productPrice" required min="1" step="0.01" value="${order.productPrice}" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="Birim fiyatı">
+                            <input type="number" id="editProductPrice" name="productPrice" required min="1" step="0.01" value="${order.productPrice}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr" placeholder="Birim fiyatı">
                         </div>
                         
                         <!-- Kategori -->
                          <div class="col-span-2">
                             <label for="editCategory" class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                            <select id="editCategory" name="category" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <select id="editCategory" name="category" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                                 ${Object.entries(CATEGORY_MAP).map(([name, value]) => 
                                     `<option value="${value}" ${order.category === value ? 'selected' : ''}>${name}</option>`
                                 ).join('')}
@@ -852,11 +860,11 @@
                         <!-- Tarih ve Seçenekler -->
                         <div class="col-span-1">
                             <label for="editOrderDate" class="block text-sm font-medium text-gray-700 mb-1">Sipariş Tarihi*</label>
-                            <input type="date" id="editOrderDate" name="orderDate" required value="${order.orderDate}" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <input type="date" id="editOrderDate" name="orderDate" required value="${order.orderDate}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
                         <div class="col-span-1">
                             <label for="editDeliveryOption" class="block text-sm font-medium text-gray-700 mb-1">Teslim Seçeneği</label>
-                            <select id="editDeliveryOption" name="deliveryOption" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <select id="editDeliveryOption" name="deliveryOption" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                                 <option value="standard" ${order.deliveryOption === 'standard' ? 'selected' : ''}>Standart Teslimat</option>
                                 <option value="urgent" ${order.deliveryOption === 'urgent' ? 'selected' : ''}>Acil Teslimat (Ek Ücretli)</option>
                                 <option value="pickup" ${order.deliveryOption === 'pickup' ? 'selected' : ''}>Mağazadan Teslim</option>
@@ -864,7 +872,7 @@
                         </div>
                         <div class="col-span-1">
                             <label for="editDeliveryDate" class="block text-sm font-medium text-gray-700 mb-1">Hedef Teslim Tarihi</label>
-                            <input type="date" id="editDeliveryDate" name="deliveryDate" value="${order.deliveryDate}" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <input type="date" id="editDeliveryDate" name="deliveryDate" value="${order.deliveryDate}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
                         <div class="col-span-1">
                              <!-- Boş alan -->
@@ -873,21 +881,21 @@
                         <!-- Aksesuarlar -->
                         <div class="col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Aksesuarlar</label>
-                            <div class="flex flex-wrap gap-4 p-3 bg-gray-50 rounded-lg border">
+                            <div class="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                                 <label class="inline-flex items-center">
-                                    <input type="checkbox" name="accessories" value="Duvar Montaj Kiti" class="form-checkbox text-indigo-600 rounded" ${isChecked('Duvar Montaj Kiti')}>
+                                    <input type="checkbox" name="accessories" value="Duvar Montaj Kiti" class="form-checkbox text-neonbirr rounded-md focus:ring-neonbirr" ${isChecked('Duvar Montaj Kiti')}>
                                     <span class="ml-2 text-sm text-gray-700">Duvar Montaj Kiti</span>
                                 </label>
                                 <label class="inline-flex items-center">
-                                    <input type="checkbox" name="accessories" value="Pil Kutusu" class="form-checkbox text-indigo-600 rounded" ${isChecked('Pil Kutusu')}>
+                                    <input type="checkbox" name="accessories" value="Pil Kutusu" class="form-checkbox text-neonbirr rounded-md focus:ring-neonbirr" ${isChecked('Pil Kutusu')}>
                                     <span class="ml-2 text-sm text-gray-700">Pil Kutusu</span>
                                 </label>
                                 <label class="inline-flex items-center">
-                                    <input type="checkbox" name="accessories" value="Uzakatan Kumanda" class="form-checkbox text-indigo-600 rounded" ${isChecked('Uzakatan Kumanda')}>
+                                    <input type="checkbox" name="accessories" value="Uzakatan Kumanda" class="form-checkbox text-neonbirr rounded-md focus:ring-neonbirr" ${isChecked('Uzakatan Kumanda')}>
                                     <span class="ml-2 text-sm text-gray-700">Uzakatan Kumanda</span>
                                 </label>
                                 <label class="inline-flex items-center">
-                                    <input type="checkbox" name="accessories" value="Zincir Montaj Kiti" class="form-checkbox text-indigo-600 rounded" ${isChecked('Zincir Montaj Kiti')}>
+                                    <input type="checkbox" name="accessories" value="Zincir Montaj Kiti" class="form-checkbox text-neonbirr rounded-md focus:ring-neonbirr" ${isChecked('Zincir Montaj Kiti')}>
                                     <span class="ml-2 text-sm text-gray-700">Zincir Montaj Kiti</span>
                                 </label>
                             </div>
@@ -896,17 +904,102 @@
                         <!-- Sipariş Notu -->
                         <div class="col-span-2">
                             <label for="editOrderNote" class="block text-sm font-medium text-gray-700 mb-1">Sipariş Notu</label>
-                            <textarea id="editOrderNote" name="orderNote" rows="3" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">${order.orderNote || ''}</textarea>
+                            <textarea id="editOrderNote" name="orderNote" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">${order.orderNote || ''}</textarea>
                         </div>
 
                         <!-- Butonlar -->
                         <div class="col-span-2 flex justify-end space-x-4 pt-4 border-t">
                             <button type="button" onclick="window.navigateTo('order_detail')" class="bg-gray-300 text-gray-800 p-3 rounded-lg font-semibold hover:bg-gray-400 transition duration-200 shadow-md">İptal / Geri Dön</button>
-                            <button type="submit" class="bg-red-600 text-white p-3 rounded-lg font-semibold hover:bg-red-700 transition duration-200 shadow-md flex items-center">
+                            <button type="submit" class="bg-neonbirr text-white p-3 rounded-lg font-semibold hover:bg-neonbirr-dark transition duration-200 shadow-md flex items-center">
                                 Değişiklikleri Kaydet
                             </button>
                         </div>
                     </form>
+                </div>
+            `;
+        };
+        
+        const renderOrderDetail = (order) => {
+            const formatDate = (dateString) => dateString ? new Date(dateString).toLocaleDateString('tr-TR') : 'Belirtilmemiş';
+            const formatCurrency = (price) => (price || 0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+            
+            const isDelayed = checkIfDelayed(order);
+            const statusDisplay = isDelayed ? 'Gecikti (Otom. Etiket)' : order.status;
+            const statusColor = getStatusColor(order.status, isDelayed);
+
+            return `
+                <div class="p-6 bg-white rounded-xl shadow-2xl mb-8">
+                    <!-- Başlık ve Durum -->
+                    <div class="flex justify-between items-start border-b pb-4 mb-6 border-gray-200">
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-800">${order.productName}</h2>
+                            <p class="text-lg text-gray-500">Sipariş ID: <span class="font-mono text-neonbirr">${order.orderID}</span></p>
+                        </div>
+                        <div class="text-right">
+                            <span class="px-4 py-2 text-sm font-semibold rounded-full ${statusColor} shadow-md transition duration-300">
+                                Durum: ${statusDisplay}
+                            </span>
+                             ${isDelayed ? `<p class="text-xs text-red-500 mt-1">Teslimat gün sınırını aştı! (${window.DELIVERY_DAYS_LIMIT} gün)</p>` : ''}
+                        </div>
+                    </div>
+
+                    <!-- GÜNCELLENDİ: Ana İçerik: Görsel (Sol Köşe) ve Bilgiler (Sağ) -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                        
+                        <!-- 1. Görsel (Sol Köşe - Büyük Kare) -->
+                        <div class="md:col-span-1">
+                            <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2 border-gray-200">Ürün Görseli</h3>
+                            <div class="aspect-square bg-gray-100 rounded-xl overflow-hidden shadow-lg border border-gray-200">
+                                <img src="${order.imageUrl}" onerror="this.onerror=null;this.src='https://placehold.co/400x400/000000/ffffff?text=Gorsel+Yok'" alt="Ürün Görseli" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+
+                        <!-- 2. Detay ve Finansal Bilgiler (Sağ) -->
+                        <div class="md:col-span-3">
+                            <!-- Finansal Özet -->
+                            <div class="bg-orange-50 p-6 rounded-xl border border-neonbirr mb-6 shadow-inner">
+                                <h3 class="text-xl font-extrabold text-neonbirr mb-4 border-b pb-2 border-neonbirr/30">₺ FİNANSAL ÖZET</h3>
+                                <div class="grid grid-cols-3 gap-4 text-gray-800 font-semibold">
+                                    <div class="text-sm">Birim Fiyat: <p class="text-lg text-neonbirr">${formatCurrency(order.productPrice)}</p></div>
+                                    <div class="text-sm">Adet: <p class="text-lg text-neonbirr">${order.quantity}</p></div>
+                                    <div class="text-sm">TOPLAM: <p class="text-2xl font-black text-green-700">${formatCurrency(order.totalPrice)}</p></div>
+                                </div>
+                            </div>
+
+                            <!-- Müşteri ve Lojistik -->
+                            <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2 border-gray-200">Müşteri ve Lojistik Bilgileri</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 text-base">
+                                <div class="font-medium text-gray-900">Müşteri Adı: <span class="font-normal text-gray-700">${order.customerName}</span></div>
+                                <div class="font-medium text-gray-900">Kategori: <span class="font-normal text-gray-700">${Object.keys(CATEGORY_MAP).find(key => CATEGORY_MAP[key] === order.category) || order.category}</span></div>
+                                <div class="font-medium text-gray-900">Sipariş Tarihi: <span class="font-normal text-gray-700">${formatDate(order.orderDate)}</span></div>
+                                <div class="font-medium text-gray-900">Hedef Teslimat: <span class="font-normal text-gray-700">${formatDate(order.deliveryDate)}</span></div>
+                                <div class="font-medium text-gray-900">Teslim Seçeneği: <span class="font-normal text-gray-700">${order.deliveryOption}</span></div>
+                                <div class="font-medium text-gray-900">Franchisee ID: <span class="text-xs font-normal text-gray-500">${order.franchiseeId.substring(0, 8)}...</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notlar ve Aksesuarlar -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-gray-200 mt-8">
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2 border-gray-200">Aksesuarlar</h3>
+                            <p class="p-3 bg-gray-50 rounded-lg text-sm text-gray-700">${order.accessories || 'Bu siparişte ek aksesuar seçilmemiştir.'}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2 border-gray-200">Sipariş Notu</h3>
+                            <p class="p-3 bg-gray-50 rounded-lg text-sm italic text-gray-700 min-h-[5rem]">${order.orderNote || 'Müşteri notu bulunmamaktadır.'}</p>
+                        </div>
+                    </div>
+
+                    <!-- İşlem Butonları -->
+                    <div class="flex justify-end space-x-4 pt-8 border-t mt-8 border-gray-200">
+                        <button onclick="window.navigateTo('orders')" class="bg-gray-300 text-gray-800 p-3 rounded-lg font-semibold hover:bg-gray-400 transition duration-200 shadow-md">
+                            Listeye Geri Dön
+                        </button>
+                        <button onclick="window.showEditOrder()" class="bg-neonbirr text-white p-3 rounded-lg font-semibold hover:bg-neonbirr-dark transition duration-200 shadow-md">
+                            Siparişi Düzenle
+                        </button>
+                    </div>
                 </div>
             `;
         };
@@ -916,49 +1009,49 @@
 
             return `
                 <div class="p-6 bg-white rounded-xl shadow-lg mb-8">
-                    <h3 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Yeni Kullanıcı Oluşturma</h3>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2 border-gray-200">Yeni Kullanıcı Oluşturma</h3>
                     <form id="createUserForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="col-span-1">
                             <label for="newEmail" class="block text-sm font-medium text-gray-700 mb-1">E-Posta</label>
-                            <input type="email" id="newEmail" required class="w-full p-2 border border-gray-300 rounded-lg" placeholder="yeni.kullanici@neonbirr.com">
+                            <input type="email" id="newEmail" required class="w-full p-3 border border-gray-300 rounded-lg" placeholder="yeni.kullanici@neonbirr.com">
                         </div>
                         <div class="col-span-1">
                             <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
-                            <input type="password" id="newPassword" required class="w-full p-2 border border-gray-300 rounded-lg" placeholder="min 6 karakter">
+                            <input type="password" id="newPassword" required class="w-full p-3 border border-gray-300 rounded-lg" placeholder="min 6 karakter">
                         </div>
                         <div class="col-span-1">
                             <label for="newName" class="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
-                            <input type="text" id="newName" required class="w-full p-2 border border-gray-300 rounded-lg" placeholder="Adı Soyadı">
+                            <input type="text" id="newName" required class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Adı Soyadı">
                         </div>
                         <div class="col-span-1">
                             <label for="newFranchiseName" class="block text-sm font-medium text-gray-700 mb-1">Franchise Adı / Departman</label>
-                            <input type="text" id="newFranchiseName" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="Neonbirr Kadıköy / Tasarım">
+                            <input type="text" id="newFranchiseName" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Neonbirr Kadıköy / Tasarım">
                         </div>
                         <div class="col-span-1">
                             <label for="newRole" class="block text-sm font-medium text-gray-700 mb-1">Rol Seçimi</label>
-                            <select id="newRole" required class="w-full p-2 border border-gray-300 rounded-lg">
+                            <select id="newRole" required class="w-full p-3 border border-gray-300 rounded-lg">
                                 <option value="franchisee">Franchisee (Mağaza)</option>
                                 <option value="admin">Admin (Merkez Yönetici)</option>
                                 <option value="designer">Tasarımcı</option>
                             </select>
                         </div>
                         <div class="col-span-2 flex justify-end">
-                            <button type="submit" class="bg-indigo-600 text-white p-2 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-md w-full md:w-auto">Kullanıcıyı Oluştur</button>
+                            <button type="submit" class="bg-neonbirr text-white p-3 rounded-lg font-semibold hover:bg-neonbirr-dark transition duration-200 shadow-md w-full md:w-auto">Kullanıcıyı Oluştur</button>
                         </div>
                     </form>
                 </div>
                 
                 <!-- YENİ: Teslimat Gün Sınırı Ayarı -->
                 <div class="p-6 bg-white rounded-xl shadow-lg">
-                    <h3 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Otomatik Gecikme Takibi Ayarları</h3>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2 border-gray-200">Otomatik Gecikme Takibi Ayarları</h3>
                     <form id="deliveryLimitForm" onsubmit="window.updateDeliveryLimit(document.getElementById('deliveryLimitDays').value); return false;" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                         <div class="col-span-1">
                             <label for="deliveryLimitDays" class="block text-sm font-medium text-gray-700 mb-1">Teslimat Gün Sınırı (gün)</label>
-                            <input type="number" id="deliveryLimitDays" required min="1" value="${window.DELIVERY_DAYS_LIMIT}" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="Örn: 14">
+                            <input type="number" id="deliveryLimitDays" required min="1" value="${window.DELIVERY_DAYS_LIMIT}" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Örn: 14">
                             <p class="text-xs text-gray-500 mt-1">Bu süreyi aşan ve 'Gönderilen Ürünler' olarak işaretlenmeyen siparişler otomatik 'Gecikti' etiketini alır.</p>
                         </div>
                         <div class="col-span-1">
-                            <button type="submit" class="bg-red-600 text-white p-2 rounded-lg font-semibold hover:bg-red-700 transition duration-200 shadow-md w-full">Sınırı Güncelle</button>
+                            <button type="submit" class="bg-red-600 text-white p-3 rounded-lg font-semibold hover:bg-red-700 transition duration-200 shadow-md w-full">Sınırı Güncelle</button>
                         </div>
                     </form>
                 </div>
@@ -973,18 +1066,29 @@
             const shippedOrders = window.orders.filter(o => o.status === 'Kargo Aşamasında' || o.status === 'Gönderilen Ürünler').length;
             const delayedOrders = window.orders.filter(o => checkIfDelayed(o)).length;
 
-            const metric = (value, label, color) => `
-                <div class="bg-white p-5 rounded-xl shadow-lg transition duration-300 hover:shadow-xl transform hover:scale-[1.01] border-l-4 border-${color}-500">
-                    <div class="text-3xl font-extrabold" style="color: ${color === 'red' ? '#EF4444' : color === 'green' ? '#10B981' : color === 'orange' ? '#F97316' : '#6366F1'};">${value}</div>
+            const metric = (value, label, color) => {
+                 let colorClass = '';
+                 let textColor = '';
+                 switch (color) {
+                    case 'red': colorClass = 'border-red-500'; textColor = '#EF4444'; break;
+                    case 'green': colorClass = 'border-green-500'; textColor = '#10B981'; break;
+                    case 'orange': colorClass = 'border-orange-500'; textColor = '#F97316'; break;
+                    case 'neonbirr': colorClass = 'border-neonbirr'; textColor = '#FF5A36'; break;
+                    default: colorClass = 'border-gray-500'; textColor = '#6B7280'; break;
+                 }
+                return `
+                <div class="bg-white p-5 rounded-xl shadow-lg transition duration-300 hover:shadow-xl transform hover:scale-[1.01] border-l-4 ${colorClass}">
+                    <div class="text-3xl font-extrabold" style="color: ${textColor};">${value}</div>
                     <div class="text-sm font-medium text-gray-500 mt-1">${label}</div>
                 </div>
-            `;
+                `;
+            };
 
             const metricsContainer = document.getElementById('metricsContainer');
             if (metricsContainer) {
                  metricsContainer.innerHTML = `
                     ${metric(activeOrders, 'Aktif Sipariş', 'red')}
-                    ${metric(completedProduction, 'Üretimi Biten', 'indigo')}
+                    ${metric(completedProduction, 'Üretimi Biten', 'neonbirr')}
                     ${metric(shippedOrders, 'Kargolanan Sipariş', 'green')}
                     ${metric(totalOrders, 'Toplam Sipariş', 'orange')}
                     ${metric(delayedOrders, 'Geciken Ürün Sayısı', 'red')}
@@ -1036,7 +1140,7 @@
             const weeklyReportHtml = Object.entries(weeklyData).map(([key, data]) => `
                 <li class="flex justify-between py-2 border-b border-gray-100">
                     <span class="font-medium text-gray-700">${key.replace('-', '. Hafta')}</span>
-                    <span class="text-sm text-indigo-600">${data.count} Sipariş</span>
+                    <span class="text-sm text-neonbirr">${data.count} Sipariş</span>
                     <span class="font-semibold text-green-600">${formatCurrency(data.revenue)}</span>
                 </li>
             `).join('');
@@ -1044,7 +1148,7 @@
             const productReportHtml = topProducts.map(([name, data]) => `
                 <li class="flex justify-between py-2 border-b border-gray-100">
                     <span class="font-medium text-gray-700">${name}</span>
-                    <span class="text-sm text-indigo-600">${data.count} Adet</span>
+                    <span class="text-sm text-neonbirr">${data.count} Adet</span>
                     <span class="font-semibold text-green-600">${formatCurrency(data.revenue)}</span>
                 </li>
             `).join('');
@@ -1052,9 +1156,9 @@
             return `
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <!-- Toplam Ciro -->
-                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-indigo-500">
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-neonbirr">
                         <p class="text-sm font-medium text-gray-500">Toplam Sipariş Tutarı</p>
-                        <p class="text-3xl font-extrabold text-indigo-700 mt-1">${formatCurrency(totalRevenue)}</p>
+                        <p class="text-3xl font-extrabold text-neonbirr mt-1">${formatCurrency(totalRevenue)}</p>
                         <p class="text-xs text-gray-400 mt-2">Tüm girilen siparişlerin toplamı.</p>
                     </div>
                     <!-- Tamamlanan Ciro -->
@@ -1074,7 +1178,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- En Çok Satan Ürünler -->
                     <div class="bg-white p-6 rounded-xl shadow-lg">
-                        <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">En Çok Kazandıran Ürünler (Ciroya Göre Top 5)</h3>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2 border-gray-200">En Çok Kazandıran Ürünler (Ciroya Göre Top 5)</h3>
                         <ul class="divide-y divide-gray-200">
                             ${productReportHtml || '<li class="text-gray-500 py-2">Henüz yeterli satış verisi yok.</li>'}
                         </ul>
@@ -1082,7 +1186,7 @@
                     
                     <!-- Haftalık Sipariş Performansı -->
                     <div class="bg-white p-6 rounded-xl shadow-lg">
-                        <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Haftalık Sipariş Analizi</h3>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2 border-gray-200">Haftalık Sipariş Analizi</h3>
                         <ul class="divide-y divide-gray-200">
                             ${weeklyReportHtml || '<li class="text-gray-500 py-2">Henüz yeterli haftalık veri yok.</li></li>'}
                         </ul>
@@ -1099,7 +1203,7 @@
                         ${currentProductFilter !== 'Tüm Ürünler' ? currentProductFilter + ' / ' : ''}
                         ${currentStatusFilter}
                     </h2>
-                    <button id="addDemoOrderBtn" class="bg-green-500 text-white p-3 rounded-lg font-semibold hover:bg-green-600 transition duration-200 shadow-md flex items-center justify-center sm:justify-start sm:w-auto">
+                    <button id="addDemoOrderBtn" class="bg-neonbirr text-white p-3 rounded-lg font-semibold hover:bg-neonbirr-dark transition duration-200 shadow-md flex items-center justify-center sm:justify-start sm:w-auto">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                         Demo Sipariş Ekle
                     </button>
@@ -1111,7 +1215,7 @@
                     <div class="w-full md:w-2/3 relative">
                         <input type="text" id="orderSearchInput" oninput="window.handleSearch(event)" value="${currentSearchTerm}"
                                placeholder="Müşteri adı, ürün adı veya ID ile ara..."
-                               class="w-full p-3 pl-10 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 shadow-sm">
+                               class="w-full p-3 pl-10 border border-gray-300 rounded-xl focus:ring-neonbirr focus:border-neonbirr transition duration-150 shadow-sm">
                         <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
 
@@ -1119,7 +1223,7 @@
                     <div class="w-full md:w-1/3 flex items-center space-x-2">
                         <label for="orderSortSelect" class="text-gray-700 whitespace-nowrap">Sırala:</label>
                         <select id="orderSortSelect" onchange="window.handleSortChange(event)"
-                                class="w-full p-3 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 shadow-sm bg-white">
+                                class="w-full p-3 border border-gray-300 rounded-xl focus:ring-neonbirr focus:border-neonbirr transition duration-150 shadow-sm bg-white">
                             <option value="date_desc">En Yeniler (Tarih Azalan)</option>
                             <option value="date_asc">En Eskiler (Tarih Artan)</option>
                             <option value="price_desc">En Pahalı (Fiyat Azalan)</option>
@@ -1159,7 +1263,7 @@
                  // ... (Loading ekranı) ...
                 document.getElementById('app').innerHTML = `
                     <div class="min-h-screen flex items-center justify-center bg-gray-100">
-                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-neonbirr" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
@@ -1176,22 +1280,22 @@
 
             // Ana Uygulama Düzeni
             document.getElementById('app').innerHTML = `
-                <div class="flex h-screen bg-gray-50">
-                    <!-- Sol Navigasyon Paneli (Sidebar) -->
-                    <div class="hidden md:flex flex-col w-64 bg-gray-800 text-white shadow-xl">
-                        <div class="p-6 border-b border-gray-700 flex items-center">
-                            <span class="text-xl font-extrabold tracking-widest text-indigo-400">NEONBIRR FMS</span>
+                <div class="flex h-screen bg-gray-100">
+                    <!-- Sol Navigasyon Paneli (Sidebar) - Light Mode -->
+                    <div class="hidden md:flex flex-col w-64 bg-white text-gray-800 shadow-lg border-r border-gray-200">
+                        <div class="p-6 border-b border-gray-200 flex items-center justify-center">
+                            <img src="https://www.neonbirr.cy/cdn/shop/files/logo.png?v=1759156134&width=90" alt="Neonbirr Logo" class="h-10 w-auto object-contain">
                         </div>
-                        <nav class="flex-grow p-4 space-y-2 sidebar-nav overflow-y-auto">
+                        <nav class="flex-grow p-4 space-y-1 sidebar-nav overflow-y-auto">
                             <!-- 1. Anasayfa (Dashboard) -->
-                            <a href="#" onclick="window.navigateTo('dashboard'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'dashboard' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-300 hover:bg-gray-700'} transition duration-200" data-page="dashboard">
+                            <a href="#" onclick="window.navigateTo('dashboard'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'dashboard' ? 'bg-neonbirr text-white shadow-md' : 'text-gray-700 hover:bg-gray-200'} transition duration-200" data-page="dashboard">
                                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l-2-2m2 2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                                 Anasayfa
                             </a>
 
                             <!-- 2. Ürün Kategorisi (Açılır Kutu) -->
                             <div class="space-y-1">
-                                <button onclick="window.toggleProductCategory()" class="w-full flex items-center justify-between p-3 text-sm font-medium rounded-lg text-gray-300 hover:bg-gray-700 transition duration-200">
+                                <button onclick="window.toggleProductCategory()" class="w-full flex items-center justify-between p-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200">
                                     <span class="flex items-center">
                                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
                                         Ürün Kategorisi
@@ -1200,12 +1304,12 @@
                                 </button>
                                 
                                 <!-- Ürün Alt Menü Öğeleri -->
-                                <div class="${isProductCategoryOpen ? 'block' : 'hidden'} ml-4 border-l border-gray-700 space-y-1 py-1">
-                                    <a href="#" onclick="window.setProductFilter('Tüm Ürünler'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentProductFilter === 'Tüm Ürünler' && currentPage === 'orders' ? 'bg-gray-700 text-indigo-400 font-bold' : 'text-gray-400 hover:bg-gray-700'} transition duration-200">
+                                <div class="${isProductCategoryOpen ? 'block' : 'hidden'} ml-4 border-l border-gray-300 space-y-1 py-1">
+                                    <a href="#" onclick="window.setProductFilter('Tüm Ürünler'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentProductFilter === 'Tüm Ürünler' && currentPage === 'orders' ? 'bg-gray-200 text-neonbirr font-bold' : 'text-gray-600 hover:bg-gray-200'} transition duration-200">
                                         Tüm Ürünler
                                     </a>
                                     ${PRODUCT_TYPES.map(type => `
-                                        <a href="#" onclick="window.setProductFilter('${type}'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentProductFilter === type && currentPage === 'orders' ? 'bg-gray-700 text-indigo-400 font-bold' : 'text-gray-400 hover:bg-gray-700'} transition duration-200">
+                                        <a href="#" onclick="window.setProductFilter('${type}'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentProductFilter === type && currentPage === 'orders' ? 'bg-gray-200 text-neonbirr font-bold' : 'text-gray-600 hover:bg-gray-200'} transition duration-200">
                                             ${type}
                                         </a>
                                     `).join('')}
@@ -1214,7 +1318,7 @@
                             
                             <!-- 3. Sipariş Kategorisi (Açılır Kutu) -->
                             <div class="space-y-1">
-                                <button onclick="window.toggleOrderCategory()" class="w-full flex items-center justify-between p-3 text-sm font-medium rounded-lg text-gray-300 hover:bg-gray-700 transition duration-200">
+                                <button onclick="window.toggleOrderCategory()" class="w-full flex items-center justify-between p-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200">
                                     <span class="flex items-center">
                                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5h6"></path></svg>
                                         Sipariş Kategorisi
@@ -1223,46 +1327,46 @@
                                 </button>
                                 
                                 <!-- Sipariş Durumu Alt Menü Öğeleri -->
-                                <div class="${isOrderCategoryOpen ? 'block' : 'hidden'} ml-4 border-l border-gray-700 space-y-1 py-1">
-                                    <a href="#" onclick="window.setStatusFilter('Tüm Siparişler'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentStatusFilter === 'Tüm Siparişler' && currentPage === 'orders' ? 'bg-gray-700 text-indigo-400 font-bold' : 'text-gray-400 hover:bg-gray-700'} transition duration-200">
+                                <div class="${isOrderCategoryOpen ? 'block' : 'hidden'} ml-4 border-l border-gray-300 space-y-1 py-1">
+                                    <a href="#" onclick="window.setStatusFilter('Tüm Siparişler'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentStatusFilter === 'Tüm Siparişler' && currentPage === 'orders' ? 'bg-gray-200 text-neonbirr font-bold' : 'text-gray-600 hover:bg-gray-200'} transition duration-200">
                                         Tüm Durumlar
                                     </a>
                                     ${ORDER_STATUSES.map(status => `
-                                        <a href="#" onclick="window.setStatusFilter('${status}'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentStatusFilter === status && currentPage === 'orders' ? 'bg-gray-700 text-indigo-400 font-bold' : 'text-gray-400 hover:bg-gray-700'} transition duration-200">
+                                        <a href="#" onclick="window.setStatusFilter('${status}'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentStatusFilter === status && currentPage === 'orders' ? 'bg-gray-200 text-neonbirr font-bold' : 'text-gray-600 hover:bg-gray-200'} transition duration-200">
                                             ${status}
                                         </a>
                                     `).join('')}
                                      <!-- YENİ: Otomatik gecikme filtresi -->
-                                     <a href="#" onclick="window.setStatusFilter('Gecikti'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentStatusFilter === 'Gecikti' && currentPage === 'orders' ? 'bg-gray-700 text-red-400 font-bold' : 'text-gray-400 hover:bg-gray-700'} transition duration-200">
+                                     <a href="#" onclick="window.setStatusFilter('Gecikti'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentStatusFilter === 'Gecikti' && currentPage === 'orders' ? 'bg-gray-200 text-red-500 font-bold' : 'text-gray-600 hover:bg-gray-200'} transition duration-200">
                                         Geciken Ürünler (Otomatik)
                                     </a>
                                 </div>
                             </div>
                             
                             <!-- 4. Yeni Sipariş Ekle -->
-                            <a href="#" onclick="window.navigateTo('add_order'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'add_order' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-300 hover:bg-gray-700'} transition duration-200" data-page="add_order">
+                            <a href="#" onclick="window.navigateTo('add_order'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'add_order' ? 'bg-neonbirr text-white shadow-md' : 'text-gray-700 hover:bg-gray-200'} transition duration-200" data-page="add_order">
                                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                                 Sipariş Ekle
                             </a>
                             
                             <!-- 5. Finansal Raporlar (Sadece Admin için) -->
                             ${currentRole === 'admin' ? `
-                                <a href="#" onclick="window.navigateTo('finance_reports'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'finance_reports' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-300 hover:bg-gray-700'} transition duration-200" data-page="finance_reports">
+                                <a href="#" onclick="window.navigateTo('finance_reports'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'finance_reports' ? 'bg-neonbirr text-white shadow-md' : 'text-gray-700 hover:bg-gray-200'} transition duration-200" data-page="finance_reports">
                                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0h6"></path></svg>
                                     Finansal Raporlar
                                 </a>` : ''}
 
                             <!-- 6. Admin Yönetimi (Sadece Admin için) -->
                             ${currentRole === 'admin' ? `
-                                <a href="#" onclick="window.navigateTo('admin'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'admin' ? 'bg-indigo-600 text-white shadow-lg' : 'text-gray-300 hover:bg-gray-700'} transition duration-200" data-page="admin">
+                                <a href="#" onclick="window.navigateTo('admin'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'admin' ? 'bg-neonbirr text-white shadow-md' : 'text-gray-700 hover:bg-gray-200'} transition duration-200" data-page="admin">
                                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354l.707.707A2.001 2.001 0 0115 7.172V19a2 2 0 01-2 2H5a2 2 0 01-2-2V7.172a2.001 2.001 0 011.293-1.811l.707-.707m0 0V5a2 2 0 012-2h4a2 2 0 012 2v1.354z"></path></svg>
                                     Admin Yönetimi
                                 </a>` : ''}
                         </nav>
-                        <div class="p-4 border-t border-gray-700">
-                            <p class="text-xs text-gray-400">Kullanıcı: ${window.auth.currentUser ? window.auth.currentUser.email : 'Misafir'}</p>
-                            <p class="text-xs font-semibold text-indigo-400">Rol: ${currentRole ? currentRole.toUpperCase() : 'MİSAFİR'}</p>
-                            <button id="logoutBtn" class="mt-2 w-full p-2 text-sm bg-red-500 rounded-lg hover:bg-red-600 transition duration-200">Çıkış Yap</button>
+                        <div class="p-4 border-t border-gray-200">
+                            <p class="text-xs text-gray-500">Kullanıcı: ${window.auth.currentUser ? window.auth.currentUser.email : 'Misafir'}</p>
+                            <p class="text-xs font-semibold text-neonbirr">Rol: ${currentRole ? currentRole.toUpperCase() : 'MİSAFİR'}</p>
+                            <button id="logoutBtn" class="mt-2 w-full p-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200">Çıkış Yap</button>
                         </div>
                     </div>
 
@@ -1442,7 +1546,7 @@
         
     </script>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-100">
     <div id="message-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
     <div id="app">
         <!-- Uygulama içeriği buraya yüklenecek -->
