@@ -168,6 +168,8 @@ if (window.auth.currentUser && window.auth.currentUser.email === adminTestEmail)
 } else {
     currentRole = 'franchisee';
 // ...
+
+try {
                 const userDoc = await getDoc(userDocRef);
                 
                 if (userDoc.exists()) {
