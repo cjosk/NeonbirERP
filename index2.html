@@ -215,29 +215,6 @@
             }
         };
 
-        window.updateDeliveryLimit = async (limitDays) => {
-            if (!window.db || currentRole !== 'admin') {
-                showMessage('Yetkisiz işlem.', 'error');
-                return;
-            }
-            try {
-                const limit = parseInt(limitDays, 10);
-                if (isNaN(limit) || limit <= 0) {
-                    showMessage('Lütfen geçerli bir gün sayısı girin.', 'error');
-                    return;
-                }
-                const docRef = doc(window.db, DELIVERY_SETTINGS_PATH);
-                await setDoc(docRef, { limitDays: limit, lastUpdated: new Date().toISOString() }, { merge: true });
-                window.DELIVERY_DAYS_LIMIT = limit;
-                showMessage(`Teslimat gün sınırı başarıyla ${limit} gün olarak güncellendi.`, 'success');
-                renderApp();
-            } catch (error) {
-                console.error("Teslimat limitini güncellerken hata:", error);
-                showMessage(`Güncelleme başarısız: ${error.message}`, 'error');
-            }
-        };
-
-
         // YENİ: Siparişin Gecikip Gecikmediğini Kontrol Eden Fonksiyon (Anlık Hesaplama)
         const checkIfDelayed = (order) => {
             // Sadece 'Gönderilen Ürünler' haricindeki siparişleri kontrol et
@@ -264,9 +241,58 @@
                 return false;
             }
         };
+        
+        // KULLANICI ROL KONTROL FONKSİYONU (setupAuthListener'dan önce tanımlanmalı)
+        const checkUserRole = async (uid) => {
+            if (!window.db) return;
+            
+            const userDocRef = doc(window.db, `artifacts/${localAppId}/users/${uid}/roles/info`);
+            const adminTestEmail = 'neonbirr@gmail.com'; 
+
+            try {
+                const userDoc = await getDoc(userDocRef);
+                
+                if (userDoc.exists()) {
+                    currentRole = userDoc.data().role || 'franchisee'; 
+                } else {
+                    if (window.auth.currentUser && window.auth.currentUser.email === adminTestEmail) {
+                        currentRole = 'admin';
+                    } else {
+                        currentRole = 'franchisee';
+                    }
+                }
+            } catch (error) {
+                console.error("Rol bilgisi çekilirken hata:", error.message);
+                currentRole = 'guest';
+            }
+        };
 
 
-        // HATA DÜZELTMESİ: Bu fonksiyonlar window objesine atanarak global olarak erişilebilir hale getirildi.
+        // HATA DÜZELTMESİ: Tüm bu fonksiyonlar, HTML'deki onclick olayları tarafından erişilebilmesi için
+        // window objesine atanmalıdır.
+        
+        window.updateDeliveryLimit = async (limitDays) => {
+            if (!window.db || currentRole !== 'admin') {
+                showMessage('Yetkisiz işlem.', 'error');
+                return;
+            }
+            try {
+                const limit = parseInt(limitDays, 10);
+                if (isNaN(limit) || limit <= 0) {
+                    showMessage('Lütfen geçerli bir gün sayısı girin.', 'error');
+                    return;
+                }
+                const docRef = doc(window.db, DELIVERY_SETTINGS_PATH);
+                await setDoc(docRef, { limitDays: limit, lastUpdated: new Date().toISOString() }, { merge: true });
+                window.DELIVERY_DAYS_LIMIT = limit;
+                showMessage(`Teslimat gün sınırı başarıyla ${limit} gün olarak güncellendi.`, 'success');
+                renderApp();
+            } catch (error) {
+                console.error("Teslimat limitini güncellerken hata:", error);
+                showMessage(`Güncelleme başarısız: ${error.message}`, 'error');
+            }
+        };
+
         window.loginUser = async (email, password) => {
             try {
                 const userCredential = await signInWithEmailAndPassword(window.auth, email, password);
@@ -506,7 +532,10 @@
                 window.setupOrderListener();
             }
         }
-        // FONKSİYON TANIMLARI BİTTİ
+        // ******************************************************
+        // TÜM FAYDALI FONKSİYONLARIN TANIMI BURADA BİTİYOR.
+        // ******************************************************
+
 
         // Sipariş Verilerini Çekme ve Dinleme
         window.orders = [];
@@ -878,91 +907,6 @@
                             </button>
                         </div>
                     </form>
-                </div>
-            `;
-        };
-        
-        const renderOrderDetail = (order) => {
-            const formatDate = (dateString) => dateString ? new Date(dateString).toLocaleDateString('tr-TR') : 'Belirtilmemiş';
-            const formatCurrency = (price) => (price || 0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
-            
-            const isDelayed = checkIfDelayed(order);
-            const statusDisplay = isDelayed ? 'Gecikti (Otom. Etiket)' : order.status;
-            const statusColor = getStatusColor(order.status, isDelayed);
-
-            return `
-                <div class="p-6 bg-white rounded-xl shadow-2xl mb-8">
-                    <!-- Başlık ve Durum -->
-                    <div class="flex justify-between items-start border-b pb-4 mb-6">
-                        <div>
-                            <h2 class="text-3xl font-bold text-gray-800">${order.productName}</h2>
-                            <p class="text-lg text-gray-500">Sipariş ID: <span class="font-mono text-indigo-600">${order.orderID}</span></p>
-                        </div>
-                        <div class="text-right">
-                            <span class="px-4 py-2 text-sm font-semibold rounded-full ${statusColor} shadow-md transition duration-300">
-                                Durum: ${statusDisplay}
-                            </span>
-                             ${isDelayed ? `<p class="text-xs text-red-500 mt-1">Teslimat gün sınırını aştı! (${window.DELIVERY_DAYS_LIMIT} gün)</p>` : ''}
-                        </div>
-                    </div>
-
-                    <!-- GÜNCELLENDİ: Ana İçerik: Görsel (Sol Köşe) ve Bilgiler (Sağ) -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-                        
-                        <!-- 1. Görsel (Sol Köşe - Büyük Kare) -->
-                        <div class="md:col-span-1">
-                            <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Ürün Görseli</h3>
-                            <div class="aspect-square bg-gray-100 rounded-xl overflow-hidden shadow-lg border border-gray-200">
-                                <img src="${order.imageUrl}" onerror="this.onerror=null;this.src='https://placehold.co/400x400/000000/ffffff?text=Gorsel+Yok'" alt="Ürün Görseli" class="w-full h-full object-cover">
-                            </div>
-                        </div>
-
-                        <!-- 2. Detay ve Finansal Bilgiler (Sağ) -->
-                        <div class="md:col-span-3">
-                            <!-- Finansal Özet -->
-                            <div class="bg-indigo-50 p-6 rounded-xl border border-indigo-200 mb-6 shadow-inner">
-                                <h3 class="text-xl font-extrabold text-indigo-800 mb-4 border-b pb-2">₺ FİNANSAL ÖZET</h3>
-                                <div class="grid grid-cols-3 gap-4 text-gray-800 font-semibold">
-                                    <div class="text-sm">Birim Fiyat: <p class="text-lg text-indigo-600">${formatCurrency(order.productPrice)}</p></div>
-                                    <div class="text-sm">Adet: <p class="text-lg text-indigo-600">${order.quantity}</p></div>
-                                    <div class="text-sm">TOPLAM: <p class="text-2xl font-black text-green-700">${formatCurrency(order.totalPrice)}</p></div>
-                                </div>
-                            </div>
-
-                            <!-- Müşteri ve Lojistik -->
-                            <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Müşteri ve Lojistik Bilgileri</h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 text-base">
-                                <div class="font-medium text-gray-900">Müşteri Adı: <span class="font-normal text-gray-700">${order.customerName}</span></div>
-                                <div class="font-medium text-gray-900">Kategori: <span class="font-normal text-gray-700">${Object.keys(CATEGORY_MAP).find(key => CATEGORY_MAP[key] === order.category) || order.category}</span></div>
-                                <div class="font-medium text-gray-900">Sipariş Tarihi: <span class="font-normal text-gray-700">${formatDate(order.orderDate)}</span></div>
-                                <div class="font-medium text-gray-900">Hedef Teslimat: <span class="font-normal text-gray-700">${formatDate(order.deliveryDate)}</span></div>
-                                <div class="font-medium text-gray-900">Teslim Seçeneği: <span class="font-normal text-gray-700">${order.deliveryOption}</span></div>
-                                <div class="font-medium text-gray-900">Franchisee ID: <span class="text-xs font-normal text-gray-500">${order.franchiseeId.substring(0, 8)}...</span></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Notlar ve Aksesuarlar -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t mt-8">
-                        <div>
-                            <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Aksesuarlar</h3>
-                            <p class="p-3 bg-gray-50 rounded-lg text-sm text-gray-700">${order.accessories || 'Bu siparişte ek aksesuar seçilmemiştir.'}</p>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Sipariş Notu</h3>
-                            <p class="p-3 bg-gray-50 rounded-lg text-sm italic text-gray-700 min-h-[5rem]">${order.orderNote || 'Müşteri notu bulunmamaktadır.'}</p>
-                        </div>
-                    </div>
-
-                    <!-- İşlem Butonları -->
-                    <div class="flex justify-end space-x-4 pt-8 border-t mt-8">
-                        <button onclick="window.navigateTo('orders')" class="bg-gray-300 text-gray-800 p-3 rounded-lg font-semibold hover:bg-gray-400 transition duration-200 shadow-md">
-                            Listeye Geri Dön
-                        </button>
-                        <button onclick="window.showEditOrder()" class="bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 shadow-md">
-                            Siparişi Düzenle
-                        </button>
-                    </div>
                 </div>
             `;
         };
@@ -1456,7 +1400,8 @@
                 if (user) {
                     currentUserId = user.uid;
                     await fetchDeliveryLimit(); 
-                    await checkUserRole(user.uid);
+                    // HATA DÜZELTMESİ: checkUserRole artık bu kapsamda tanımlı
+                    await checkUserRole(user.uid); 
                     renderApp();
                 } else {
                     currentUserId = null;
