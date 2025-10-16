@@ -222,11 +222,12 @@
                 if (docSnap.exists()) {
                     window.DELIVERY_DAYS_LIMIT = docSnap.data().limitDays || 14;
                 } else {
-                    // Ayar yoksa varsayılan değeri kaydet
-                    await setDoc(docRef, { limitDays: 14, lastUpdated: new Date().toISOString() });
-                    window.DELIVERY_DAYS_LIMIT = 14;
+                    // HATA DÜZELTMESİ: Yetki hatasına sebep olan setDoc kaldırıldı.
+                    // Ayar yoksa varsayılan değeri kullanmaya devam et.
+                    window.DELIVERY_DAYS_LIMIT = 14; 
                 }
             } catch (error) {
+                // HATA DÜZELTMESİ: Konsol çıktısı bırakıldı, ancak kullanıcıya yetki hatası göstermek yerine varsayılan kullanılır.
                 console.error("Teslimat limitini çekerken/ayarlarken hata:", error.message);
                 window.DELIVERY_DAYS_LIMIT = 14; // Hata durumunda varsayılanı kullanmaya devam et
             }
@@ -540,31 +541,6 @@
             currentPage = page;
             isMobileMenuOpen = false; // Sayfa değişince mobil menüyü kapat
             renderApp();
-            // Bu kısım renderApp'in sonunda yapılmalı veya renderApp içinde yeniden ele alınmalıdır.
-            /*
-            const navLinks = document.querySelectorAll('nav a.nav-link');
-            navLinks.forEach(link => {
-                const linkPage = link.getAttribute('data-page');
-                if (linkPage === page) {
-                    link.classList.remove('text-gray-700', 'hover:bg-gray-200'); 
-                    link.classList.add('bg-neonbirr', 'text-white', 'shadow-md');
-                } else {
-                    link.classList.remove('bg-neonbirr', 'text-white', 'shadow-md');
-                    link.classList.add('text-gray-700', 'hover:bg-gray-200');
-                }
-            });
-            // Mobil menüdeki aktif butonu güncelle
-            const mobileLinks = document.querySelectorAll('.mobile-nav-item');
-            mobileLinks.forEach(link => {
-                if (link.getAttribute('data-page') === page) {
-                    link.classList.add('text-neonbirr', 'font-bold');
-                    link.classList.remove('text-gray-500');
-                } else {
-                    link.classList.remove('text-neonbirr', 'font-bold');
-                    link.classList.add('text-gray-500');
-                }
-            });
-            */
 
             if(page === 'dashboard' || page === 'orders' || page === 'finance_reports') {
                 window.setupOrderListener();
@@ -1632,7 +1608,8 @@
             }
             
             // Mobil Navigasyon Aktifliği
-            window.navigateTo(currentPage); // Başlangıçta veya render sonrası aktif butonu ayarla
+            // HATA DÜZELTMESİ: Sonsuz döngüye neden olan bu satır kaldırıldı.
+            // window.navigateTo(currentPage); 
         };
 
         // Kullanıcı yetkilendirme ve rol kontrolü
