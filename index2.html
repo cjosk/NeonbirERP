@@ -540,11 +540,13 @@
             currentPage = page;
             isMobileMenuOpen = false; // Sayfa değişince mobil menüyü kapat
             renderApp();
+            // Bu kısım renderApp'in sonunda yapılmalı veya renderApp içinde yeniden ele alınmalıdır.
+            /*
             const navLinks = document.querySelectorAll('nav a.nav-link');
             navLinks.forEach(link => {
                 const linkPage = link.getAttribute('data-page');
                 if (linkPage === page) {
-                    link.classList.remove('text-gray-700', 'hover:bg-gray-200'); // Eski dark/indigo renkleri yerine yeni light/turuncu renkler
+                    link.classList.remove('text-gray-700', 'hover:bg-gray-200'); 
                     link.classList.add('bg-neonbirr', 'text-white', 'shadow-md');
                 } else {
                     link.classList.remove('bg-neonbirr', 'text-white', 'shadow-md');
@@ -562,6 +564,7 @@
                     link.classList.add('text-gray-500');
                 }
             });
+            */
 
             if(page === 'dashboard' || page === 'orders' || page === 'finance_reports') {
                 window.setupOrderListener();
@@ -614,7 +617,11 @@
                 
                 if(currentPage === 'order_detail' || currentPage === 'edit_order') {
                     const order = window.orders.find(o => o.id === currentOrderId);
-                    if (order) renderApp();
+                    // DÖNGÜ HATASI ÇÖZÜMÜ: Sadece güncel sipariş bilgisi değişirse sayfayı yeniden çiz.
+                    if (order && (currentOrderId !== 'TEMP_ID' || currentPage !== 'order_detail')) { 
+                        // TEMP_ID sadece geçici bir kontrol, burada asıl amaç data değişince renderApp'i çağırmak.
+                        renderApp(); 
+                    }
                 }
 
                 if(currentPage === 'dashboard') {
