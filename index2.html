@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neonbirr ERP</title>
+    <title>Neonbirr ERP Yönetim Sistemi</title>
     <!-- Favicon Eklendi -->
-    <link rel="icon" type="image/x-icon" href="https://www.neonbirr.cy/favicon.ico">
+    <link rel="icon" type="image/png" href="https://i.hizliresim.com/5sdk6we.png">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN (Grafikler için eklendi) -->
@@ -37,18 +37,12 @@
         input[type="file"]::file-selector-button {
             cursor: pointer;
         }
-        /* Mobil: Sidebar gizli */
-        @media (max-width: 767px) {
-            .mobile-hidden-menu {
-                display: none;
-            }
-        }
-        /* MOBİL DÜZELTME: Sipariş Ekle formunda label ve inputlar için daha iyi ayrım */
-        /* Genel form grubunun mobil cihazlarda dikey düzenlenmesini zorlamak için */
+        
+        /* MOBİL DÜZELTME: Sipariş Ekle formunda daha iyi ayrım için */
         .form-group-mobile { 
             display: flex; 
             flex-direction: column; 
-            margin-bottom: 1rem; /* Her grup arasına boşluk ekle */
+            margin-bottom: 1rem; 
         }
         .form-group-mobile > label {
             width: 100%;
@@ -69,7 +63,6 @@
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, query, where, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        // YENİ: Firebase Storage SDK'ları
         import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 
@@ -95,7 +88,6 @@
             window.app = initializeApp(firebaseConfig);
             window.db = getFirestore(window.app);
             window.auth = getAuth(window.app);
-            // YENİ: Storage servisini başlat
             window.storage = getStorage(window.app);
         } else {
             console.error("Firebase yapılandırması bulunamadı. Uygulama başlatılamadı.");
@@ -104,22 +96,19 @@
         let currentRole = null;
         let currentUserId = null;
         let isAuthReady = false;
-        let currentPage = 'dashboard'; // Sayfa durumunu yönetmek için
+        let currentPage = 'dashboard';
         
-        // Sipariş Filtreleri ve Sıralama
         let currentStatusFilter = 'Tüm Siparişler'; 
         let currentProductFilter = 'Tüm Ürünler'; 
-        let currentSearchTerm = ''; // Arama terimi
-        let currentSortOption = 'date_desc'; // Sıralama seçeneği (varsayılan: En Yeniler)
-        let currentOrderId = null; // Detay/Düzenleme sayfasında gösterilecek siparişin Firestore ID'si
+        let currentSearchTerm = '';
+        let currentSortOption = 'date_desc';
+        let currentOrderId = null;
 
-        // Menü Durumları
         let isOrderCategoryOpen = false; 
         let isProductCategoryOpen = false; 
-        let isMobileMenuOpen = false; // YENİ: Mobil menü durumu
+        let isMobileMenuOpen = false;
         
-        // YENİ: Global ayarlar için değişken
-        window.DELIVERY_DAYS_LIMIT = 14; // Varsayılan 14 gün
+        window.DELIVERY_DAYS_LIMIT = 14;
 
         const ORDER_STATUSES = [
             'Çizilmeyi Bekleyenler', 
@@ -128,7 +117,7 @@
             'Üretimi Tamamlandı', 
             'Kargo Aşamasında', 
             'Gönderilen Ürünler',
-            'Gecikti' // Gecikti durumu artık otomatik hesaplanacak olsa da listede tutulmalı.
+            'Gecikti'
         ];
 
         const PRODUCT_TYPES = [
@@ -152,7 +141,7 @@
             'Toplu Siparişler': 'toplu'
         };
 
-        // UI Güncelleme Fonksiyonları (Hata düzeltmesi için en üste alındı)
+        // UI Güncelleme Fonksiyonları
         const showMessage = (message, type = 'info') => {
             const container = document.getElementById('message-container');
             const color = {
@@ -174,7 +163,6 @@
                 <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
                     <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-8">
                         <div class="flex justify-center mb-6">
-                            <!-- YENİ LOGO -->
                             <img src="https://www.neonbirr.cy/cdn/shop/files/logo.png?v=1759156134&width=90" alt="Neonbirr Logo" class="h-10">
                         </div>
                         <h2 class="text-xl font-semibold text-gray-800 mb-6 text-center">Franchisee Girişi</h2>
@@ -202,7 +190,7 @@
         };
         
         const getStatusColor = (status, isDelayed) => {
-            if (isDelayed) return 'bg-red-500 text-white font-bold animate-pulse'; // GECİKTİ durumu için özel renk
+            if (isDelayed) return 'bg-red-500 text-white font-bold animate-pulse'; 
             switch (status) {
                 case 'Çizilmeyi Bekleyenler': return 'bg-yellow-100 text-yellow-800';
                 case 'Çizildi': return 'bg-blue-100 text-blue-800';
@@ -210,28 +198,25 @@
                 case 'Üretimi Tamamlandı': return 'bg-green-100 text-green-800';
                 case 'Kargo Aşamasında': return 'bg-purple-100 text-purple-800';
                 case 'Gönderilen Ürünler': return 'bg-gray-100 text-gray-800';
-                case 'Gecikti': return 'bg-red-100 text-red-800 font-bold'; // Eskiden manueldi, şimdi otomatik etiketlenecek
+                case 'Gecikti': return 'bg-red-100 text-red-800 font-bold';
                 default: return 'bg-gray-100 text-gray-600';
             }
         };
 
-        // YENİ: Firebase Storage Yükleme Fonksiyonu
+        // Firebase Storage Yükleme Fonksiyonu
         const uploadFile = async (file, orderId) => {
             if (!window.storage) throw new Error("Firebase Storage başlatılmadı.");
             
-            // Dosya yolunu oluştur: artifacts/{appId}/public/images/{orderId}/{dosyaAdı}
             const storagePath = `artifacts/${localAppId}/public/images/${orderId}/${file.name}`;
             const fileRef = storageRef(window.storage, storagePath);
             
-            // Yükleme işlemi
             await uploadBytes(fileRef, file);
             
-            // Yüklenen dosyanın indirme URL'sini al
             const downloadURL = await getDownloadURL(fileRef);
             return downloadURL;
         };
 
-        // YENİ: Teslimat Sınırını Çekme ve Ayarlama Fonksiyonları
+        // Teslimat Sınırını Çekme ve Ayarlama Fonksiyonları
         const DELIVERY_SETTINGS_PATH = `artifacts/${localAppId}/public/settings/system/delivery`;
         
         const fetchDeliveryLimit = async () => {
@@ -243,37 +228,29 @@
                 if (docSnap.exists()) {
                     window.DELIVERY_DAYS_LIMIT = docSnap.data().limitDays || 14;
                 } else {
-                    // HATA DÜZELTMESİ: Yetki hatasına sebep olan setDoc kaldırıldı.
-                    // Ayar yoksa varsayılan değeri kullanmaya devam et.
                     window.DELIVERY_DAYS_LIMIT = 14; 
                 }
             } catch (error) {
-                // HATA DÜZELTMESİ: Konsol çıktısı bırakıldı, ancak kullanıcıya yetki hatası göstermek yerine varsayılan kullanılır.
-                console.error("Teslimat limitini çekerken/ayarlarken hata:", error.message);
-                window.DELIVERY_DAYS_LIMIT = 14; // Hata durumunda varsayılanı kullanmaya devam et
+                console.error("Teslimat limitini çekerken hata:", error.message);
+                window.DELIVERY_DAYS_LIMIT = 14; 
             }
         };
 
-        // YENİ: Siparişin Gecikip Gecikmediğini Kontrol Eden Fonksiyon (Anlık Hesaplama)
+        // Siparişin Gecikip Gecikmediğini Kontrol Eden Fonksiyon (Anlık Hesaplama)
         const checkIfDelayed = (order) => {
-            // Sadece 'Gönderilen Ürünler' haricindeki siparişleri kontrol et
             if (order.status === 'Gönderilen Ürünler') return false;
             
-            // orderDate yoksa veya formatı yanlışsa kontrol etme
             if (!order.orderDate) return false;
 
             try {
                 const orderDate = new Date(order.orderDate);
-                // Teslimat Günü Sınırını (Admin ayarı) kullan
                 const limitDays = window.DELIVERY_DAYS_LIMIT; 
                 
                 const expectedDeliveryDate = new Date(orderDate);
-                // orderDate'e limitDays'i ekle
                 expectedDeliveryDate.setDate(orderDate.getDate() + limitDays);
 
                 const now = new Date();
                 
-                // Eğer bugünün tarihi beklenen teslim tarihinden büyükse gecikmiştir
                 return now > expectedDeliveryDate;
             } catch (e) {
                 console.error("Gecikme hesaplamasında tarih hatası:", e);
@@ -281,7 +258,6 @@
             }
         };
         
-        // KULLANICI ROL KONTROL FONKSİYONU (setupAuthListener'dan önce tanımlanmalı)
         const checkUserRole = async (uid) => {
             if (!window.db) return;
             
@@ -306,10 +282,6 @@
             }
         };
 
-
-        // HATA DÜZELTMESİ: Tüm bu fonksiyonlar, HTML'deki onclick olayları tarafından erişilebilmesi için
-        // window objesine atanmalıdır.
-        
         window.updateDeliveryLimit = async (limitDays) => {
             if (!window.db || currentRole !== 'admin') {
                 showMessage('Yetkisiz işlem.', 'error');
@@ -391,7 +363,6 @@
             const form = event.target;
             const fileInput = form.productImageFile.files[0]; 
             
-            // DÜZELTME: Uzaktan Kumanda yazım hatası düzeltildi
             const accessories = Array.from(form.querySelectorAll('input[name="accessories"]:checked')).map(cb => cb.value);
             const price = parseFloat(form.productPrice.value) || 0; 
 
@@ -455,7 +426,6 @@
 
             const form = event.target;
             const fileInput = form.editProductImageFile.files[0];
-            // DÜZELTME: Uzaktan Kumanda yazım hatası düzeltildi
             const accessories = Array.from(form.querySelectorAll('input[name="accessories"]:checked')).map(cb => cb.value);
             const price = parseFloat(form.productPrice.value) || 0;
             const quantity = parseInt(form.quantity.value, 10);
@@ -536,7 +506,7 @@
             renderApp(); 
         }
         
-        // YENİ: Mobil menü açma/kapama
+        // DÜZELTME: Mobil menü açma/kapama
         window.toggleMobileMenu = () => {
              isMobileMenuOpen = !isMobileMenuOpen;
              renderApp();
@@ -569,9 +539,94 @@
                 window.setupOrderListener();
             }
         }
-        // ******************************************************
-        // TÜM FAYDALI FONKSİYONLARIN TANIMI BURADA BİTİYOR.
-        // ******************************************************
+        
+        // YENİ: Tekrarlayan Sidebar İçeriği Fonksiyonu (Navigasyon Linkleri)
+        const renderSidebarContent = () => {
+             const linkColor = 'text-gray-700 hover:bg-gray-200';
+             const activeColor = 'bg-neonbirr text-white shadow-md';
+             const subLinkColor = 'text-gray-600 hover:bg-gray-200';
+             const subActiveColor = 'bg-gray-200 text-neonbirr font-bold';
+
+             return `
+                 <nav class="flex-grow p-4 space-y-1 sidebar-nav overflow-y-auto">
+                    <!-- 1. Anasayfa (Dashboard) -->
+                    <a href="#" onclick="window.navigateTo('dashboard'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'dashboard' ? activeColor : linkColor} transition duration-200" data-page="dashboard">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l-2-2m2 2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                        Anasayfa
+                    </a>
+
+                    <!-- 2. Ürün Kategorisi (Açılır Kutu) -->
+                    <div class="space-y-1">
+                        <button onclick="window.toggleProductCategory()" class="w-full flex items-center justify-between p-3 text-sm font-medium rounded-lg ${linkColor} transition duration-200">
+                            <span class="flex items-center">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                                Ürün Kategorisi
+                            </span>
+                            <svg class="w-4 h-4 transform ${isProductCategoryOpen ? 'rotate-180' : 'rotate-0'} transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        
+                        <!-- Ürün Alt Menü Öğeleri -->
+                        <div class="${isProductCategoryOpen ? 'block' : 'hidden'} ml-4 border-l border-gray-300 space-y-1 py-1">
+                            <a href="#" onclick="window.setProductFilter('Tüm Ürünler'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentProductFilter === 'Tüm Ürünler' && currentPage === 'orders' ? subActiveColor : subLinkColor} transition duration-200">
+                                Tüm Ürünler
+                            </a>
+                            ${PRODUCT_TYPES.map(type => `
+                                <a href="#" onclick="window.setProductFilter('${type}'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentProductFilter === type && currentPage === 'orders' ? subActiveColor : subLinkColor} transition duration-200">
+                                    ${type}
+                                </a>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- 3. Sipariş Kategorisi (Açılır Kutu) -->
+                    <div class="space-y-1">
+                        <button onclick="window.toggleOrderCategory()" class="w-full flex items-center justify-between p-3 text-sm font-medium rounded-lg ${linkColor} transition duration-200">
+                            <span class="flex items-center">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5h6"></path></svg>
+                                Sipariş Kategorisi
+                            </span>
+                            <svg class="w-4 h-4 transform ${isOrderCategoryOpen ? 'rotate-180' : 'rotate-0'} transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        
+                        <!-- Sipariş Durumu Alt Menü Öğeleri -->
+                        <div class="${isOrderCategoryOpen ? 'block' : 'hidden'} ml-4 border-l border-gray-300 space-y-1 py-1">
+                            <a href="#" onclick="window.setStatusFilter('Tüm Siparişler'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentStatusFilter === 'Tüm Siparişler' && currentPage === 'orders' ? subActiveColor : subLinkColor} transition duration-200">
+                                Tüm Durumlar
+                            </a>
+                            ${ORDER_STATUSES.map(status => `
+                                <a href="#" onclick="window.setStatusFilter('${status}'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentStatusFilter === status && currentPage === 'orders' ? subActiveColor : subLinkColor} transition duration-200">
+                                    ${status}
+                                </a>
+                            `).join('')}
+                             <!-- Otomatik gecikme filtresi -->
+                             <a href="#" onclick="window.setStatusFilter('Gecikti'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentStatusFilter === 'Gecikti' && currentPage === 'orders' ? 'bg-gray-200 text-red-500 font-bold' : subLinkColor} transition duration-200">
+                                Geciken Ürünler (Otomatik)
+                            </a>
+                        </div>
+                    </div>
+                            
+                    <!-- 4. Yeni Sipariş Ekle -->
+                    <a href="#" onclick="window.navigateTo('add_order'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'add_order' ? activeColor : linkColor} transition duration-200" data-page="add_order">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Sipariş Ekle
+                    </a>
+                    
+                    <!-- 5. Finansal Raporlar (Sadece Admin için) -->
+                    ${currentRole === 'admin' ? `
+                        <a href="#" onclick="window.navigateTo('finance_reports'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'finance_reports' ? activeColor : linkColor} transition duration-200" data-page="finance_reports">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0h6"></path></svg>
+                            Finansal Raporlar
+                        </a>` : ''}
+
+                    <!-- 6. Admin Yönetimi (Sadece Admin için) -->
+                    ${currentRole === 'admin' ? `
+                        <a href="#" onclick="window.navigateTo('admin'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'admin' ? activeColor : linkColor} transition duration-200" data-page="admin">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354l.707.707A2.001 2.001 0 0115 7.172V19a2 2 0 01-2 2H5a2 2 0 01-2-2V7.172a2.001 2.001 0 011.293-1.811l.707-.707m0 0V5a2 2 0 012-2h4a2 2 0 012 2v1.354z"></path></svg>
+                            Admin Yönetimi
+                        </a>` : ''}
+                </nav>
+            `;
+        }
 
 
         // Sipariş Verilerini Çekme ve Dinleme
@@ -616,16 +671,14 @@
                 
                 if(currentPage === 'order_detail' || currentPage === 'edit_order') {
                     const order = window.orders.find(o => o.id === currentOrderId);
-                    // DÖNGÜ HATASI ÇÖZÜMÜ: Sadece güncel sipariş bilgisi değişirse sayfayı yeniden çiz.
-                    if (order && (currentOrderId !== 'TEMP_ID' || currentPage !== 'order_detail')) { 
-                        // TEMP_ID sadece geçici bir kontrol, burada asıl amaç data değişince renderApp'i çağırmak.
+                    if (order && currentOrderId) { 
                         renderApp(); 
                     }
                 }
 
                 if(currentPage === 'dashboard') {
                     renderDashboardMetrics();
-                    renderDashboardChart(); // Yeni: Grafik render fonksiyonu çağrıldı
+                    renderDashboardChart(); 
                 }
                 
                 if(currentPage === 'finance_reports') {
@@ -644,31 +697,28 @@
             const chartCanvas = document.getElementById('orderStatusChart');
             if (!chartCanvas) return;
 
-            // Önceki grafiği yok et
             if (orderChartInstance) {
                 orderChartInstance.destroy();
             }
 
-            // Sipariş durumlarına göre veriyi topla
             const statusCounts = {};
             window.orders.forEach(order => {
                 const status = checkIfDelayed(order) ? 'Gecikti' : order.status;
                 statusCounts[status] = (statusCounts[status] || 0) + 1;
             });
 
-            // Grafikte gösterilecek durumlar ve renkler
             const labels = [
                 'Çizilmeyi Bekleyenler', 'Çizildi', 'Üretime Alındı', 
                 'Üretimi Tamamlandı', 'Kargo Aşamasında', 'Gönderilen Ürünler', 'Gecikti'
             ];
             const colors = {
-                'Çizilmeyi Bekleyenler': '#FBBF24', // Amber-400
-                'Çizildi': '#60A5FA',             // Blue-400
-                'Üretime Alındı': '#818CF8',      // Indigo-400
-                'Üretimi Tamamlandı': '#34D399',  // Green-400
-                'Kargo Aşamasında': '#C084FC',    // Purple-400
-                'Gönderilen Ürünler': '#9CA3AF',  // Gray-400
-                'Gecikti': '#EF4444'              // Red-500
+                'Çizilmeyi Bekleyenler': '#FBBF24', 
+                'Çizildi': '#60A5FA',             
+                'Üretime Alındı': '#818CF8',      
+                'Üretimi Tamamlandı': '#34D399',  
+                'Kargo Aşamasında': '#C084FC',    
+                'Gönderilen Ürünler': '#9CA3AF',  
+                'Gecikti': '#EF4444'              
             };
 
             const data = labels.map(label => statusCounts[label] || 0);
@@ -717,11 +767,9 @@
                 }
             };
 
-            // Yeni Chart instance'ı oluştur
             orderChartInstance = new Chart(chartCanvas, config);
         };
         
-        // ... (Diğer render fonksiyonları) ...
         const renderOrderList = () => {
             const tableBody = document.getElementById('orderTableBody');
             if (!tableBody) return;
@@ -776,7 +824,6 @@
                             ${statusDisplay}
                         </span>
                     </td>
-                    <!-- MOBİL DÜZELTME: Aksesuar alanı içeriği için satır içi CSS eklendi -->
                     <td class="p-3 text-sm text-gray-700" style="min-width: 120px;">${order.accessories || 'Yok'}</td>
                     <td class="p-3 font-semibold text-gray-900 whitespace-nowrap">${order.customerName}</td>
                     <td class="p-3 text-sm text-gray-700">${order.productName}</td>
@@ -804,7 +851,6 @@
              return `
                 <div class="p-6 bg-white rounded-xl shadow-lg mb-8">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3 border-gray-200">Yeni Sipariş Girişi</h2>
-                    <!-- MOBİL DÜZELTME: Grid yapısı kaldırıldı, dikey akış ve form-group-mobile CSS'i kullanıldı. -->
                     <form id="addOrderForm" class="flex flex-col gap-4">
 
                         <!-- Müşteri Bilgileri -->
@@ -915,7 +961,6 @@
                 <div class="p-6 bg-white rounded-xl shadow-lg mb-8">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">Siparişi Düzenle: <span class="text-neonbirr">${order.orderID}</span></h2>
                     
-                    <!-- MOBİL DÜZELTME: Grid yapısı kaldırıldı, dikey akış ve form-group-mobile CSS'i kullanıldı. -->
                     <form id="editOrderForm" onsubmit="window.updateOrder(event); return false;" class="flex flex-col gap-4">
 
                         <!-- Sipariş Durumu -->
@@ -933,12 +978,11 @@
                             <input type="text" id="editCustomerName" name="customerName" required value="${order.customerName}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
                         
-                        <!-- GÜNCELLENDİ: Dosya Yükleme (Düzenleme) -->
+                        <!-- Dosya Yükleme (Düzenleme) -->
                         <div class="form-group-mobile">
                             <label for="editProductImageFile" class="block text-sm font-medium text-gray-700 mb-1">Yeni Görsel Yükle</label>
                             <input type="file" id="editProductImageFile" name="editProductImageFile" accept="image/*" class="w-full p-3 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-neonbirr hover:file:bg-gray-200">
                             <p class="text-xs text-gray-500 mt-1">Yeni dosya seçilmezse mevcut görsel kalır.</p>
-                            <!-- Mevcut görsel URL'sini gizli tut, güncellemede kullanmak için -->
                             <input type="hidden" name="currentImageUrl" value="${order.imageUrl}"> 
                             
                             <!-- Mevcut Görsel Önizleme -->
@@ -1004,7 +1048,7 @@
                                     <span class="ml-2 text-sm text-gray-700">Pil Kutusu</span>
                                 </label>
                                 <label class="inline-flex items-center">
-                                    <input type="checkbox" name="accessories" value="Uzaktan Kumanda" class="form-checkbox text-neonbirr rounded-md focus:ring-neonbirr" ${isChecked('Uzakatan Kumanda') || isChecked('Uzaktan Kumanda')}>
+                                    <input type="checkbox" name="accessories" value="Uzaktan Kumanda" class="form-checkbox text-neonbirr rounded-md focus:ring-neonbirr" ${isChecked('Uzaktan Kumanda')}>
                                     <span class="ml-2 text-sm text-gray-700">Uzaktan Kumanda</span>
                                 </label>
                                 <label class="inline-flex items-center">
@@ -1042,7 +1086,7 @@
 
             return `
                 <div class="p-6 bg-white rounded-xl shadow-2xl mb-8">
-                    <!-- Başlık ve Durum (MOBİL DÜZELTME: Başlık alanına mb-4 eklendi) -->
+                    <!-- Başlık ve Durum -->
                     <div class="flex flex-col sm:flex-row justify-between items-start border-b pb-4 mb-4 border-gray-200">
                         <div class="w-full sm:w-auto mb-4 sm:mb-0">
                             <h2 class="text-2xl sm:text-3xl font-bold text-gray-800">${order.productName}</h2>
@@ -1057,7 +1101,6 @@
                     </div>
 
                     <!-- Ana İçerik: Görsel (Sol Köşe) ve Bilgiler (Sağ) -->
-                    <!-- MOBİL DÜZELTME: Grid yapısında boşluklar ve mobil için dikey akış düzenlendi -->
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-8 mb-8">
                         
                         <!-- 1. Görsel (Sol Köşe - Büyük Kare) -->
@@ -1070,7 +1113,7 @@
 
                         <!-- 2. Detay ve Finansal Bilgiler (Sağ) -->
                         <div class="md:col-span-3">
-                            <!-- Finansal Özet (MOBİL DÜZELTME: Daha kompakt layout) -->
+                            <!-- Finansal Özet -->
                             <div class="bg-orange-50 p-6 rounded-xl border border-neonbirr mb-6 shadow-inner">
                                 <h3 class="text-xl font-extrabold text-neonbirr mb-4 border-b pb-2 border-neonbirr/30">₺ FİNANSAL ÖZET</h3>
                                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 text-gray-800 font-semibold">
@@ -1105,7 +1148,7 @@
                         </div>
                     </div>
 
-                    <!-- İşlem Butonları (MOBİL DÜZELTME: Tam genişlikte düğmeler) -->
+                    <!-- İşlem Butonları -->
                     <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-8 border-t mt-8 border-gray-200">
                         <button onclick="window.navigateTo('orders')" class="bg-gray-300 text-gray-800 p-3 rounded-lg font-semibold hover:bg-gray-400 transition duration-200 shadow-md w-full sm:w-auto">
                             Listeye Geri Dön
@@ -1155,7 +1198,7 @@
                     </form>
                 </div>
                 
-                <!-- YENİ: Teslimat Gün Sınırı Ayarı -->
+                <!-- Otomatik Gecikme Takibi Ayarları -->
                 <div class="p-6 bg-white rounded-xl shadow-lg">
                     <h3 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2 border-gray-200">Otomatik Gecikme Takibi Ayarları</h3>
                     <form id="deliveryLimitForm" onsubmit="window.updateDeliveryLimit(document.getElementById('deliveryLimitDays').value); return false;" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
@@ -1317,7 +1360,6 @@
                         ${currentProductFilter !== 'Tüm Ürünler' ? currentProductFilter + ' / ' : ''}
                         ${currentStatusFilter}
                     </h2>
-                    <!-- Demo Sipariş Ekle butonu kaldırıldı -->
                 </div>
                 
                 <!-- ARAMA ve SIRALAMA Kontrolleri -->
@@ -1345,7 +1387,7 @@
                     </div>
                 </div>
 
-                <!-- Sipariş Listesi (MOBİL DÜZELTME: Table layout'u kaymayı desteklemesi için min-w-full'u korudu) -->
+                <!-- Sipariş Listesi -->
                 <div class="bg-white rounded-xl shadow-lg overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-100">
@@ -1371,7 +1413,6 @@
 
         const renderApp = () => {
             if (!isAuthReady) {
-                 // ... (Loading ekranı) ...
                 document.getElementById('app').innerHTML = `
                     <div class="min-h-screen flex items-center justify-center bg-gray-100">
                         <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-neonbirr" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -1393,7 +1434,6 @@
             const renderMobileToggle = () => {
                 if (currentPage === 'login') return '';
                 
-                // Mobil görünümde menü butonunu göster
                 return `
                     <button onclick="window.toggleMobileMenu()" class="md:hidden p-2 text-gray-500 hover:text-neonbirr focus:outline-none focus:ring-2 focus:ring-neonbirr rounded-lg shadow-md bg-white">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1406,175 +1446,29 @@
                 `;
             }
             
-            // Mobil Menü içeriği (Sidebar'ın aynısı)
-            const renderMobileSidebar = () => {
-                return `
-                    <nav class="flex-grow p-4 space-y-1 sidebar-nav overflow-y-auto">
-                        <!-- 1. Anasayfa (Dashboard) -->
-                        <a href="#" onclick="window.navigateTo('dashboard'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'dashboard' ? 'bg-neonbirr text-white shadow-md' : 'text-gray-700 hover:bg-gray-200'} transition duration-200" data-page="dashboard">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l-2-2m2 2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                            Anasayfa
-                        </a>
-
-                        <!-- YENİ: Ürün Kategorisi (Açılır Kutu) -->
-                        <div class="space-y-1">
-                            <button onclick="window.toggleProductCategory()" class="w-full flex items-center justify-between p-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200">
-                                <span class="flex items-center">
-                                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
-                                    Ürün Kategorisi
-                                </span>
-                                <svg class="w-4 h-4 transform ${isProductCategoryOpen ? 'rotate-180' : 'rotate-0'} transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </button>
-                            
-                            <!-- Ürün Alt Menü Öğeleri -->
-                            <div class="${isProductCategoryOpen ? 'block' : 'hidden'} ml-4 border-l border-gray-300 space-y-1 py-1">
-                                <a href="#" onclick="window.setProductFilter('Tüm Ürünler'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentProductFilter === 'Tüm Ürünler' && currentPage === 'orders' ? 'bg-gray-200 text-neonbirr font-bold' : 'text-gray-600 hover:bg-gray-200'} transition duration-200">
-                                    Tüm Ürünler
-                                </a>
-                                ${PRODUCT_TYPES.map(type => `
-                                    <a href="#" onclick="window.setProductFilter('${type}'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentProductFilter === type && currentPage === 'orders' ? 'bg-gray-200 text-neonbirr font-bold' : 'text-gray-600 hover:bg-gray-200'} transition duration-200">
-                                        ${type}
-                                    </a>
-                                `).join('')}
-                            </div>
-                        </div>
-
-                        <!-- YENİ: Sipariş Kategorisi (Açılır Kutu) -->
-                        <div class="space-y-1">
-                            <button onclick="window.toggleOrderCategory()" class="w-full flex items-center justify-between p-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200">
-                                <span class="flex items-center">
-                                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5h6"></path></svg>
-                                    Sipariş Kategorisi
-                                </span>
-                                <svg class="w-4 h-4 transform ${isOrderCategoryOpen ? 'rotate-180' : 'rotate-0'} transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </button>
-                            
-                            <!-- Sipariş Durumu Alt Menü Öğeleri -->
-                            <div class="${isOrderCategoryOpen ? 'block' : 'hidden'} ml-4 border-l border-gray-300 space-y-1 py-1">
-                                <a href="#" onclick="window.setStatusFilter('Tüm Siparişler'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentStatusFilter === 'Tüm Siparişler' && currentPage === 'orders' ? 'bg-gray-200 text-neonbirr font-bold' : 'text-gray-600 hover:bg-gray-200'} transition duration-200">
-                                    Tüm Durumlar
-                                </a>
-                                ${ORDER_STATUSES.map(status => `
-                                    <a href="#" onclick="window.setStatusFilter('${status}'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentStatusFilter === status && currentPage === 'orders' ? 'bg-gray-200 text-neonbirr font-bold' : 'text-gray-600 hover:bg-gray-200'} transition duration-200">
-                                        ${status}
-                                    </a>
-                                `).join('')}
-                                <!-- Otomatik gecikme filtresi -->
-                                <a href="#" onclick="window.setStatusFilter('Gecikti'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentStatusFilter === 'Gecikti' && currentPage === 'orders' ? 'bg-gray-200 text-red-500 font-bold' : 'text-gray-600 hover:bg-gray-200'} transition duration-200">
-                                    Geciken Ürünler (Otomatik)
-                                </a>
-                            </div>
-                        </div>
-                            
-                        <!-- 4. Yeni Sipariş Ekle -->
-                        <a href="#" onclick="window.navigateTo('add_order'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'add_order' ? 'bg-neonbirr text-white shadow-md' : 'text-gray-700 hover:bg-gray-200'} transition duration-200" data-page="add_order">
-                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                            Sipariş Ekle
-                        </a>
-                        
-                        <!-- 5. Finansal Raporlar (Sadece Admin için) -->
-                        ${currentRole === 'admin' ? `
-                            <a href="#" onclick="window.navigateTo('finance_reports'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'finance_reports' ? 'bg-neonbirr text-white shadow-md' : 'text-gray-700 hover:bg-gray-200'} transition duration-200" data-page="finance_reports">
-                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0h6"></path></svg>
-                                Finansal Raporlar
-                            </a>` : ''}
-
-                        <!-- 6. Admin Yönetimi (Sadece Admin için) -->
-                        ${currentRole === 'admin' ? `
-                            <a href="#" onclick="window.navigateTo('admin'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'admin' ? 'bg-neonbirr text-white shadow-md' : 'text-gray-700 hover:bg-gray-200'} transition duration-200" data-page="admin">
-                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354l.707.707A2.001 2.001 0 0115 7.172V19a2 2 0 01-2 2H5a2 2 0 01-2-2V7.172a2.001 2.001 0 011.293-1.811l.707-.707m0 0V5a2 2 0 012-2h4a2 2 0 012 2v1.354z"></path></svg>
-                                Admin Yönetimi
-                            </a>` : ''}
-                    </nav>
-                `;
-            }
-            
             // Ana Uygulama Düzeni
             document.getElementById('app').innerHTML = `
                 <div class="flex h-screen bg-gray-100">
                     
-                    <!-- Sol Navigasyon Paneli (Sidebar) - Masaüstü -->
-                    <div class="mobile-hidden-menu md:flex flex-col w-64 bg-white text-gray-800 shadow-lg border-r border-gray-200">
+                    <!-- YENİ: Mobil Overlay ve Backdrop (Açılırsa tüm ekranı kaplar) -->
+                    ${isMobileMenuOpen ? 
+                        `<div class="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 md:hidden" onclick="window.toggleMobileMenu()"></div>` : ''
+                    }
+
+                    <!-- Sol Navigasyon Paneli (Sidebar) - Masaüstü/Mobil -->
+                    <!-- Mobilde sabit, soldan kayarak açılır. Masaüstünde ise relative/görünür. -->
+                    <div class="
+                        fixed inset-y-0 left-0 z-50 w-64 
+                        flex flex-col bg-white text-gray-800 shadow-xl border-r border-gray-200
+                        transform transition-transform duration-300 ease-in-out
+                        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+                        md:relative md:translate-x-0 md:flex
+                    ">
                         <div class="p-6 border-b border-gray-200 flex items-center justify-center">
                             <img src="https://www.neonbirr.cy/cdn/shop/files/logo.png?v=1759156134&width=90" alt="Neonbirr Logo" class="h-10 w-auto object-contain">
                         </div>
-                        <nav class="flex-grow p-4 space-y-1 sidebar-nav overflow-y-auto">
-                            <!-- 1. Anasayfa (Dashboard) -->
-                            <a href="#" onclick="window.navigateTo('dashboard'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'dashboard' ? 'bg-neonbirr text-white shadow-md' : 'text-gray-700 hover:bg-gray-200'} transition duration-200" data-page="dashboard">
-                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l-2-2m2 2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                                Anasayfa
-                            </a>
-
-                            <!-- 2. Ürün Kategorisi (Açılır Kutu) -->
-                            <div class="space-y-1">
-                                <button onclick="window.toggleProductCategory()" class="w-full flex items-center justify-between p-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200">
-                                    <span class="flex items-center">
-                                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
-                                        Ürün Kategorisi
-                                    </span>
-                                    <svg class="w-4 h-4 transform ${isProductCategoryOpen ? 'rotate-180' : 'rotate-0'} transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                </button>
-                                
-                                <!-- Ürün Alt Menü Öğeleri -->
-                                <div class="${isProductCategoryOpen ? 'block' : 'hidden'} ml-4 border-l border-gray-300 space-y-1 py-1">
-                                    <a href="#" onclick="window.setProductFilter('Tüm Ürünler'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentProductFilter === 'Tüm Ürünler' && currentPage === 'orders' ? 'bg-gray-200 text-neonbirr font-bold' : 'text-gray-600 hover:bg-gray-200'} transition duration-200">
-                                        Tüm Ürünler
-                                    </a>
-                                    ${PRODUCT_TYPES.map(type => `
-                                        <a href="#" onclick="window.setProductFilter('${type}'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentProductFilter === type && currentPage === 'orders' ? 'bg-gray-200 text-neonbirr font-bold' : 'text-gray-600 hover:bg-gray-200'} transition duration-200">
-                                            ${type}
-                                        </a>
-                                    `).join('')}
-                                </div>
-                            </div>
-                            
-                            <!-- 3. Sipariş Kategorisi (Açılır Kutu) -->
-                            <div class="space-y-1">
-                                <button onclick="window.toggleOrderCategory()" class="w-full flex items-center justify-between p-3 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200">
-                                    <span class="flex items-center">
-                                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5h6"></path></svg>
-                                        Sipariş Kategorisi
-                                    </span>
-                                    <svg class="w-4 h-4 transform ${isOrderCategoryOpen ? 'rotate-180' : 'rotate-0'} transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                </button>
-                                
-                                <!-- Sipariş Durumu Alt Menü Öğeleri -->
-                                <div class="${isOrderCategoryOpen ? 'block' : 'hidden'} ml-4 border-l border-gray-300 space-y-1 py-1">
-                                    <a href="#" onclick="window.setStatusFilter('Tüm Siparişler'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentStatusFilter === 'Tüm Siparişler' && currentPage === 'orders' ? 'bg-gray-200 text-neonbirr font-bold' : 'text-gray-600 hover:bg-gray-200'} transition duration-200">
-                                        Tüm Durumlar
-                                    </a>
-                                    ${ORDER_STATUSES.map(status => `
-                                        <a href="#" onclick="window.setStatusFilter('${status}'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentStatusFilter === status && currentPage === 'orders' ? 'bg-gray-200 text-neonbirr font-bold' : 'text-gray-600 hover:bg-gray-200'} transition duration-200">
-                                            ${status}
-                                        </a>
-                                    `).join('')}
-                                     <!-- YENİ: Otomatik gecikme filtresi -->
-                                     <a href="#" onclick="window.setStatusFilter('Gecikti'); return false;" class="block pl-4 py-2 text-xs font-medium rounded-lg ${currentStatusFilter === 'Gecikti' && currentPage === 'orders' ? 'bg-gray-200 text-red-500 font-bold' : 'text-gray-600 hover:bg-gray-200'} transition duration-200">
-                                        Geciken Ürünler (Otomatik)
-                                    </a>
-                                </div>
-                            </div>
-                            
-                            <!-- 4. Yeni Sipariş Ekle -->
-                            <a href="#" onclick="window.navigateTo('add_order'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'add_order' ? 'bg-neonbirr text-white shadow-md' : 'text-gray-700 hover:bg-gray-200'} transition duration-200" data-page="add_order">
-                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                                Sipariş Ekle
-                            </a>
-                            
-                            <!-- 5. Finansal Raporlar (Sadece Admin için) -->
-                            ${currentRole === 'admin' ? `
-                                <a href="#" onclick="window.navigateTo('finance_reports'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'finance_reports' ? 'bg-neonbirr text-white shadow-md' : 'text-gray-700 hover:bg-gray-200'} transition duration-200" data-page="finance_reports">
-                                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0h6"></path></svg>
-                                    Finansal Raporlar
-                                </a>` : ''}
-
-                            <!-- 6. Admin Yönetimi (Sadece Admin için) -->
-                            ${currentRole === 'admin' ? `
-                                <a href="#" onclick="window.navigateTo('admin'); return false;" class="nav-link flex items-center p-3 text-sm font-medium rounded-lg ${currentPage === 'admin' ? 'bg-neonbirr text-white shadow-md' : 'text-gray-700 hover:bg-gray-200'} transition duration-200" data-page="admin">
-                                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354l.707.707A2.001 2.001 0 0115 7.172V19a2 2 0 01-2 2H5a2 2 0 01-2-2V7.172a2.001 2.001 0 011.293-1.811l.707-.707m0 0V5a2 2 0 012-2h4a2 2 0 012 2v1.354z"></path></svg>
-                                    Admin Yönetimi
-                                </a>` : ''}
-                        </nav>
+                        <!-- Sidebar İçeriği -->
+                        ${renderSidebarContent()} 
                         <div class="p-4 border-t border-gray-200">
                             <p class="text-xs text-gray-500">Kullanıcı: ${window.auth.currentUser ? window.auth.currentUser.email : 'Misafir'}</p>
                             <p class="text-xs font-semibold text-neonbirr">Rol: ${currentRole ? currentRole.toUpperCase() : 'MİSAFİR'}</p>
@@ -1586,7 +1480,7 @@
                     <!-- Ana İçerik Alanı -->
                     <main class="flex-1 overflow-y-auto p-4 md:p-8">
                         
-                        <!-- Üst Başlık ve Mobil Menü Butonu (MOBİL DÜZELTME: Logo ve Çıkış/Menü butonu için sabit header) -->
+                        <!-- Üst Başlık ve Mobil Menü Butonu (Sabit header) -->
                         <div class="flex justify-between items-center mb-6 md:hidden sticky top-0 bg-gray-100 py-3 z-30 border-b border-gray-200 -mt-4 -mx-4 px-4 md:px-0 md:mt-0 md:mx-0">
                             <h1 id="pageTitleMobile" class="text-xl font-bold text-gray-900"></h1>
                             ${renderMobileToggle()}
@@ -1601,7 +1495,7 @@
                     </main>
                 </div>
                 
-                <!-- YENİ: Alt Mobil Navigasyon Barı (DÜZELTME: Artı butonu dikeyde hizalandı, Finans rol kontrolü eklendi, Gecikenler butonu eklendi) -->
+                <!-- Alt Mobil Navigasyon Barı -->
                 <div id="mobile-nav" class="fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-gray-200 shadow-2xl md:hidden flex justify-around items-center z-40">
                     <button class="mobile-nav-item flex flex-col items-center p-2 text-gray-700 ${currentPage === 'dashboard' ? 'text-neonbirr' : ''}" onclick="window.navigateTo('dashboard'); return false;" data-page="dashboard">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l-2-2m2 2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
@@ -1611,7 +1505,7 @@
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5h6"></path></svg>
                         <span class="text-xs">Siparişler</span>
                     </button>
-                    <!-- Artı butonu dikeyde ortalandı (translate-y kaldırıldı) -->
+                    <!-- Artı butonu -->
                     <button class="mobile-nav-item flex items-center justify-center bg-neonbirr text-white rounded-full h-12 w-12 shadow-lg hover:bg-neonbirr-dark transition duration-150" onclick="window.navigateTo('add_order'); return false;" data-page="add_order">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     </button>
@@ -1640,7 +1534,6 @@
             
             // Sayfa içeriğini yükle
             const contentArea = document.getElementById('contentArea');
-            // Masaüstü ve Mobil başlıkları ayrı ayrı güncelle
             const pageTitleDesktop = document.getElementById('pageTitleDesktop');
             const pageTitleMobile = document.getElementById('pageTitleMobile');
 
@@ -1677,7 +1570,6 @@
 
             }
             else if (currentPage === 'order_detail') {
-                 // Detay sayfasını göster
                 const order = window.orders.find(o => o.id === currentOrderId);
                 if (order) {
                     pageTitleDesktop.textContent = `Sipariş Detayı: ${order.customerName}`;
@@ -1707,7 +1599,7 @@
                     <div id="metricsContainer" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
                         <!-- Metrikler buraya JS ile yüklenecek -->
                     </div>
-                    <!-- YENİ: Grafik Alanı -->
+                    <!-- Grafik Alanı -->
                     <div class="p-6 bg-white rounded-xl shadow-lg h-96">
                         <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2 border-gray-200">Sipariş Süreci Dağılımı (Aktif)</h3>
                         <div class="h-80 flex items-center justify-center">
@@ -1732,13 +1624,12 @@
                 if (user) {
                     currentUserId = user.uid;
                     await fetchDeliveryLimit(); 
-                    // HATA DÜZELTMESİ: checkUserRole artık bu kapsamda tanımlı
                     await checkUserRole(user.uid); 
                     renderApp();
                 } else {
                     currentUserId = null;
                     currentRole = null;
-                    renderApp(); // Giriş sayfasını göster
+                    renderApp(); 
                 }
             });
             
@@ -1747,13 +1638,11 @@
                  try {
                      await signInWithCustomToken(window.auth, initialAuthToken);
                  } catch (error) {
-                     // Hata durumunda bile devam et, onAuthStateChanged tetiklenecektir.
                  }
              } else {
                  try {
                      await signInAnonymously(window.auth);
                  } catch (e) {
-                     // Anonim giriş başarısızsa devam et, kullanıcıya giriş ekranı gösterilecek.
                  }
              }
         };
