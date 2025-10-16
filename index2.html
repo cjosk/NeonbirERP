@@ -8,6 +8,8 @@
     <link rel="icon" type="image/x-icon" href="https://www.neonbirr.cy/favicon.ico">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN (Grafikler için eklendi) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <!-- Inter Font -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
@@ -370,6 +372,7 @@
             const form = event.target;
             const fileInput = form.productImageFile.files[0]; 
             
+            // DÜZELTME: Uzaktan Kumanda yazım hatası düzeltildi
             const accessories = Array.from(form.querySelectorAll('input[name="accessories"]:checked')).map(cb => cb.value);
             const price = parseFloat(form.productPrice.value) || 0; 
 
@@ -433,6 +436,7 @@
 
             const form = event.target;
             const fileInput = form.editProductImageFile.files[0];
+            // DÜZELTME: Uzaktan Kumanda yazım hatası düzeltildi
             const accessories = Array.from(form.querySelectorAll('input[name="accessories"]:checked')).map(cb => cb.value);
             const price = parseFloat(form.productPrice.value) || 0;
             const quantity = parseInt(form.quantity.value, 10);
@@ -602,6 +606,7 @@
 
                 if(currentPage === 'dashboard') {
                     renderDashboardMetrics();
+                    renderDashboardChart(); // Yeni: Grafik render fonksiyonu çağrıldı
                 }
                 
                 if(currentPage === 'finance_reports') {
@@ -611,6 +616,90 @@
             }, (error) => {
                 console.error("Siparişler dinlenirken hata oluştu:", error);
             });
+        };
+        
+        // YENİ: Dashboard Grafik Render Fonksiyonu
+        let orderChartInstance = null;
+
+        const renderDashboardChart = () => {
+            const chartCanvas = document.getElementById('orderStatusChart');
+            if (!chartCanvas) return;
+
+            // Önceki grafiği yok et
+            if (orderChartInstance) {
+                orderChartInstance.destroy();
+            }
+
+            // Sipariş durumlarına göre veriyi topla
+            const statusCounts = {};
+            window.orders.forEach(order => {
+                const status = checkIfDelayed(order) ? 'Gecikti' : order.status;
+                statusCounts[status] = (statusCounts[status] || 0) + 1;
+            });
+
+            // Grafikte gösterilecek durumlar ve renkler
+            const labels = [
+                'Çizilmeyi Bekleyenler', 'Çizildi', 'Üretime Alındı', 
+                'Üretimi Tamamlandı', 'Kargo Aşamasında', 'Gönderilen Ürünler', 'Gecikti'
+            ];
+            const colors = {
+                'Çizilmeyi Bekleyenler': '#FBBF24', // Amber-400
+                'Çizildi': '#60A5FA',             // Blue-400
+                'Üretime Alındı': '#818CF8',      // Indigo-400
+                'Üretimi Tamamlandı': '#34D399',  // Green-400
+                'Kargo Aşamasında': '#C084FC',    // Purple-400
+                'Gönderilen Ürünler': '#9CA3AF',  // Gray-400
+                'Gecikti': '#EF4444'              // Red-500
+            };
+
+            const data = labels.map(label => statusCounts[label] || 0);
+            const backgroundColors = labels.map(label => colors[label]);
+
+            const config = {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sipariş Durum Dağılımı',
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        hoverOffset: 4,
+                        borderWidth: 1,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 10,
+                                padding: 15,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Aktif Sipariş Durum Dağılımı',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 15
+                            }
+                        }
+                    }
+                }
+            };
+
+            // Yeni Chart instance'ı oluştur
+            orderChartInstance = new Chart(chartCanvas, config);
         };
         
         // ... (Diğer render fonksiyonları) ...
@@ -760,7 +849,7 @@
                              <!-- Boş alan bırakıldı - düzenli grid için -->
                         </div>
                         
-                        <!-- Aksesuarlar -->
+                        <!-- Aksesuarlar (DÜZELTME: Uzakatan Kumanda -> Uzaktan Kumanda) -->
                         <div class="col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Aksesuarlar</label>
                             <div class="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -773,8 +862,8 @@
                                     <span class="ml-2 text-sm text-gray-700">Pil Kutusu</span>
                                 </label>
                                 <label class="inline-flex items-center">
-                                    <input type="checkbox" name="accessories" value="Uzakatan Kumanda" class="form-checkbox text-neonbirr rounded-md focus:ring-neonbirr">
-                                    <span class="ml-2 text-sm text-gray-700">Uzakatan Kumanda</span>
+                                    <input type="checkbox" name="accessories" value="Uzaktan Kumanda" class="form-checkbox text-neonbirr rounded-md focus:ring-neonbirr">
+                                    <span class="ml-2 text-sm text-gray-700">Uzaktan Kumanda</span>
                                 </label>
                                 <label class="inline-flex items-center">
                                     <input type="checkbox" name="accessories" value="Zincir Montaj Kiti" class="form-checkbox text-neonbirr rounded-md focus:ring-neonbirr">
@@ -888,7 +977,7 @@
                              <!-- Boş alan -->
                         </div>
                         
-                        <!-- Aksesuarlar -->
+                        <!-- Aksesuarlar (DÜZELTME: Uzakatan Kumanda -> Uzaktan Kumanda) -->
                         <div class="col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Aksesuarlar</label>
                             <div class="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -901,8 +990,8 @@
                                     <span class="ml-2 text-sm text-gray-700">Pil Kutusu</span>
                                 </label>
                                 <label class="inline-flex items-center">
-                                    <input type="checkbox" name="accessories" value="Uzakatan Kumanda" class="form-checkbox text-neonbirr rounded-md focus:ring-neonbirr" ${isChecked('Uzakatan Kumanda')}>
-                                    <span class="ml-2 text-sm text-gray-700">Uzakatan Kumanda</span>
+                                    <input type="checkbox" name="accessories" value="Uzaktan Kumanda" class="form-checkbox text-neonbirr rounded-md focus:ring-neonbirr" ${isChecked('Uzakatan Kumanda') || isChecked('Uzaktan Kumanda')}>
+                                    <span class="ml-2 text-sm text-gray-700">Uzaktan Kumanda</span>
                                 </label>
                                 <label class="inline-flex items-center">
                                     <input type="checkbox" name="accessories" value="Zincir Montaj Kiti" class="form-checkbox text-neonbirr rounded-md focus:ring-neonbirr" ${isChecked('Zincir Montaj Kiti')}>
@@ -982,7 +1071,7 @@
                                 <div class="font-medium text-gray-900">Müşteri Adı: <span class="font-normal text-gray-700">${order.customerName}</span></div>
                                 <div class="font-medium text-gray-900">Kategori: <span class="font-normal text-gray-700">${Object.keys(CATEGORY_MAP).find(key => CATEGORY_MAP[key] === order.category) || order.category}</span></div>
                                 <div class="font-medium text-gray-900">Sipariş Tarihi: <span class="font-normal text-gray-700">${formatDate(order.orderDate)}</span></div>
-                                <div class="font-medium text-gray-900">Hedef Teslimat: <span class="font-normal text-gray-700">${formatDate(order.deliveryDate)}</span></div>
+                                <div class="font-medium text-gray-900">Hedef Teslimat: <span class="font-normal text-gray-700">${order.deliveryDate ? formatDate(order.deliveryDate) : 'Belirtilmemiş'}</span></div>
                                 <div class="font-medium text-gray-900">Teslim Seçeneği: <span class="font-normal text-gray-700">${order.deliveryOption}</span></div>
                                 <div class="font-medium text-gray-900">Franchisee ID: <span class="text-xs font-normal text-gray-500">${order.franchiseeId.substring(0, 8)}...</span></div>
                             </div>
@@ -1213,10 +1302,7 @@
                         ${currentProductFilter !== 'Tüm Ürünler' ? currentProductFilter + ' / ' : ''}
                         ${currentStatusFilter}
                     </h2>
-                    <button id="addDemoOrderBtn" class="bg-neonbirr text-white p-3 rounded-lg font-semibold hover:bg-neonbirr-dark transition duration-200 shadow-md flex items-center justify-center sm:justify-start sm:w-auto">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                        Demo Sipariş Ekle
-                    </button>
+                    <!-- Demo Sipariş Ekle butonu kaldırıldı -->
                 </div>
                 
                 <!-- ARAMA ve SIRALAMA Kontrolleri -->
@@ -1550,12 +1636,13 @@
                 
                 document.getElementById('orderSortSelect').value = currentSortOption;
 
-                // Demo Sipariş Ekleme butonu dinleyicisini yeniden ata
+                // Demo Sipariş Ekleme butonu dinleyicisi KALDIRILDI
+                /*
                 document.getElementById('addDemoOrderBtn').addEventListener('click', () => {
                     // Demo sipariş ekleme
                     const statuses = ["Çizilmeyi Bekleyenler", "Çizildi", "Üretime Alındı", "Kargo Aşamasında", "Gönderilen Ürünler", "Gecikti"];
                     const status = statuses[Math.floor(Math.random() * statuses.length)];
-                    const accessories = ["Duvar Montaj Kiti", "Pil Kutusu", "Uzakatan Kumanda", "Zincir Montaj Kiti"];
+                    const accessories = ["Duvar Montaj Kiti", "Pil Kutusu", "Uzaktan Kumanda", "Zincir Montaj Kiti"];
                     const categories = Object.values(CATEGORY_MAP);
                     const category = categories[Math.floor(Math.random() * categories.length)];
                     const randomPrice = Math.floor(Math.random() * 5000) + 500;
@@ -1587,6 +1674,7 @@
                         .then(() => showMessage('Örnek sipariş başarıyla eklendi.', 'success'))
                         .catch(error => showMessage(`Sipariş ekleme başarısız: ${error.message}`, 'error'));
                 });
+                */
 
             } else { // Dashboard
                 pageTitleDesktop.textContent = 'Anasayfa (Dashboard)';
@@ -1595,9 +1683,12 @@
                     <div id="metricsContainer" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
                         <!-- Metrikler buraya JS ile yüklenecek -->
                     </div>
-                    <!-- Dashboard grafikleri vb. buraya eklenebilir -->
-                    <div class="p-6 bg-white rounded-xl shadow-lg h-96 flex items-center justify-center text-gray-500">
-                        Buraya üretim huni grafikleri ve satış trendleri grafikleri eklenecektir.
+                    <!-- YENİ: Grafik Alanı -->
+                    <div class="p-6 bg-white rounded-xl shadow-lg h-96">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2 border-gray-200">Sipariş Süreci Dağılımı (Aktif)</h3>
+                        <div class="h-80 flex items-center justify-center">
+                            <canvas id="orderStatusChart" class="max-h-full"></canvas>
+                        </div>
                     </div>
                 `;
                 currentStatusFilter = 'Tüm Siparişler';
