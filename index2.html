@@ -44,6 +44,12 @@
             }
         }
         /* MOBİL DÜZELTME: Sipariş Ekle formunda label ve inputlar için daha iyi ayrım */
+        /* Genel form grubunun mobil cihazlarda dikey düzenlenmesini zorlamak için */
+        .form-group-mobile { 
+            display: flex; 
+            flex-direction: column; 
+            margin-bottom: 1rem; /* Her grup arasına boşluk ekle */
+        }
         .form-group-mobile > label {
             width: 100%;
             margin-bottom: 0.25rem;
@@ -798,38 +804,38 @@
              return `
                 <div class="p-6 bg-white rounded-xl shadow-lg mb-8">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3 border-gray-200">Yeni Sipariş Girişi</h2>
-                    <!-- MOBİL DÜZELTME: Grid yerine mobil'de dikey boşluk ayarlandı -->
-                    <form id="addOrderForm" class="grid grid-cols-1 md:grid-cols-2 gap-y-4 md:gap-y-6 gap-x-6">
+                    <!-- MOBİL DÜZELTME: Grid yapısı kaldırıldı, dikey akış ve form-group-mobile CSS'i kullanıldı. -->
+                    <form id="addOrderForm" class="flex flex-col gap-4">
 
                         <!-- Müşteri Bilgileri -->
-                        <div class="col-span-1 form-group-mobile">
+                        <div class="form-group-mobile">
                             <label for="customerName" class="block text-sm font-medium text-gray-700 mb-1">Müşteri İsmi*</label>
                             <input type="text" id="customerName" name="customerName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr transition" placeholder="Ad Soyad veya Firma Adı">
                         </div>
                         
-                        <!-- GÜNCELLENDİ: Sadece Dosya Yükleme Aktif -->
-                        <div class="col-span-1 form-group-mobile">
+                        <!-- Ürün Görseli Yükle -->
+                        <div class="form-group-mobile">
                             <label for="productImageFile" class="block text-sm font-medium text-gray-700 mb-1">Ürün Görseli Yükle*</label>
                             <input type="file" id="productImageFile" name="productImageFile" accept="image/*" class="w-full p-3 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-neonbirr hover:file:bg-gray-200" required>
                             <p class="text-xs text-gray-500 mt-1">Lütfen siparişe ait görseli seçin. Yükleme kaydetme anında gerçekleşir.</p>
                         </div>
                         
                         <!-- Ürün Detayları -->
-                        <div class="col-span-1 form-group-mobile">
-                            <label for="productName" class="block text-sm font-medium text-gray-700 mb-1">Ürün İsmi (Örn: 90x90 5 Yıldız)</label>
+                        <div class="form-group-mobile">
+                            <label for="productName" class="block text-sm font-medium text-gray-700 mb-1">Ürün İsmi (Örn: 90x90 5 Yıldız)*</label>
                             <input type="text" id="productName" name="productName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
-                        <div class="col-span-1 form-group-mobile">
+                        <div class="form-group-mobile">
                             <label for="quantity" class="block text-sm font-medium text-gray-700 mb-1">Adet*</label>
                             <input type="number" id="quantity" name="quantity" required min="1" value="1" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
                         
                         <!-- Fiyat Bilgisi -->
-                        <div class="col-span-1 form-group-mobile">
+                        <div class="form-group-mobile">
                             <label for="productPrice" class="block text-sm font-medium text-gray-700 mb-1">Ürün Fiyatı (TL)*</label>
                             <input type="number" id="productPrice" name="productPrice" required min="1" step="0.01" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr" placeholder="Birim fiyatı">
                         </div>
-                        <div class="col-span-1 form-group-mobile">
+                        <div class="form-group-mobile">
                             <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
                             <select id="category" name="category" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                                 <option value="neon_standart">Canvas Neon</option>
@@ -843,11 +849,11 @@
 
                         
                         <!-- Tarih ve Seçenekler -->
-                        <div class="col-span-1 form-group-mobile">
+                        <div class="form-group-mobile">
                             <label for="orderDate" class="block text-sm font-medium text-gray-700 mb-1">Sipariş Tarihi*</label>
                             <input type="date" id="orderDate" name="orderDate" required value="${new Date().toISOString().split('T')[0]}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
-                        <div class="col-span-1 form-group-mobile">
+                        <div class="form-group-mobile">
                             <label for="deliveryOption" class="block text-sm font-medium text-gray-700 mb-1">Teslim Seçeneği</label>
                             <select id="deliveryOption" name="deliveryOption" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                                 <option value="standard">Standart Teslimat</option>
@@ -855,16 +861,13 @@
                                 <option value="pickup">Mağazadan Teslim</option>
                             </select>
                         </div>
-                        <div class="col-span-1 form-group-mobile">
+                        <div class="form-group-mobile">
                             <label for="deliveryDate" class="block text-sm font-medium text-gray-700 mb-1">Hedef Teslim Tarihi</label>
                             <input type="date" id="deliveryDate" name="deliveryDate" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
-                        <div class="col-span-1">
-                             <!-- Boş alan bırakıldı - düzenli grid için -->
-                        </div>
                         
-                        <!-- Aksesuarlar (DÜZELTME: Uzakatan Kumanda -> Uzaktan Kumanda) -->
-                        <div class="col-span-2 form-group-mobile">
+                        <!-- Aksesuarlar -->
+                        <div class="form-group-mobile">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Aksesuarlar</label>
                             <div class="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                                 <label class="inline-flex items-center">
@@ -887,13 +890,13 @@
                         </div>
 
                         <!-- Sipariş Notu -->
-                        <div class="col-span-2 form-group-mobile">
+                        <div class="form-group-mobile">
                             <label for="orderNote" class="block text-sm font-medium text-gray-700 mb-1">Sipariş Notu</label>
                             <textarea id="orderNote" name="orderNote" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr" placeholder="Müşteriye özel talepler, renk kodları vb."></textarea>
                         </div>
 
                         <!-- Butonlar -->
-                        <div class="col-span-2 flex justify-end space-x-4 pt-4 border-t">
+                        <div class="flex justify-end space-x-4 pt-4 border-t">
                             <button type="reset" class="bg-gray-200 text-gray-700 p-3 rounded-lg font-semibold hover:bg-gray-300 transition duration-200 shadow-md">Sıfırla</button>
                             <button type="submit" class="bg-neonbirr text-white p-3 rounded-lg font-semibold hover:bg-neonbirr-dark transition duration-200 shadow-md flex items-center">
                                 Siparişi Kaydet
@@ -912,10 +915,11 @@
                 <div class="p-6 bg-white rounded-xl shadow-lg mb-8">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">Siparişi Düzenle: <span class="text-neonbirr">${order.orderID}</span></h2>
                     
-                    <form id="editOrderForm" onsubmit="window.updateOrder(event); return false;" class="grid grid-cols-1 md:grid-cols-2 gap-y-4 md:gap-y-6 gap-x-6">
+                    <!-- MOBİL DÜZELTME: Grid yapısı kaldırıldı, dikey akış ve form-group-mobile CSS'i kullanıldı. -->
+                    <form id="editOrderForm" onsubmit="window.updateOrder(event); return false;" class="flex flex-col gap-4">
 
                         <!-- Sipariş Durumu -->
-                        <div class="col-span-2 form-group-mobile">
+                        <div class="form-group-mobile">
                             <label for="editStatus" class="block text-sm font-medium text-gray-700 mb-1">Sipariş Durumu</label>
                             <select id="editStatus" name="status" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-neonbirr focus:border-neonbirr font-semibold text-gray-800">
                                 ${ORDER_STATUSES.map(s => `<option value="${s}" ${order.status === s ? 'selected' : ''}>${s}</option>`).join('')}
@@ -924,43 +928,42 @@
                         </div>
                         
                         <!-- Müşteri Bilgileri -->
-                        <div class="col-span-1 form-group-mobile">
+                        <div class="form-group-mobile">
                             <label for="editCustomerName" class="block text-sm font-medium text-gray-700 mb-1">Müşteri İsmi*</label>
                             <input type="text" id="editCustomerName" name="customerName" required value="${order.customerName}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
                         
                         <!-- GÜNCELLENDİ: Dosya Yükleme (Düzenleme) -->
-                        <div class="col-span-1 form-group-mobile">
+                        <div class="form-group-mobile">
                             <label for="editProductImageFile" class="block text-sm font-medium text-gray-700 mb-1">Yeni Görsel Yükle</label>
                             <input type="file" id="editProductImageFile" name="editProductImageFile" accept="image/*" class="w-full p-3 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-neonbirr hover:file:bg-gray-200">
                             <p class="text-xs text-gray-500 mt-1">Yeni dosya seçilmezse mevcut görsel kalır.</p>
                             <!-- Mevcut görsel URL'sini gizli tut, güncellemede kullanmak için -->
                             <input type="hidden" name="currentImageUrl" value="${order.imageUrl}"> 
+                            
+                            <!-- Mevcut Görsel Önizleme -->
+                             <div class="mt-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Mevcut Görsel Önizleme</label>
+                                <img src="${order.imageUrl}" onerror="this.onerror=null;this.src='https://placehold.co/50x50/000000/ffffff?text=X'" alt="Mevcut Görsel" class="w-16 h-16 rounded-lg object-cover shadow-sm border border-gray-200">
+                             </div>
                         </div>
 
                         <!-- Ürün Detayları -->
-                        <div class="col-span-1 form-group-mobile">
+                        <div class="form-group-mobile">
                             <label for="editProductName" class="block text-sm font-medium text-gray-700 mb-1">Ürün İsmi (Örn: 90x90 5 Yıldız)</label>
                             <input type="text" id="editProductName" name="productName" required value="${order.productName}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
-                        <div class="col-span-1">
-                             <!-- Görsel Önizleme -->
-                             <label class="block text-sm font-medium text-gray-700 mb-1">Mevcut Görsel</label>
-                             <img src="${order.imageUrl}" onerror="this.onerror=null;this.src='https://placehold.co/50x50/000000/ffffff?text=X'" alt="Mevcut Görsel" class="w-16 h-16 rounded-lg object-cover shadow-sm border border-gray-200">
-                        </div>
-                        
-                        <!-- Fiyat ve Adet -->
-                        <div class="col-span-1 form-group-mobile">
+                        <div class="form-group-mobile">
                             <label for="editQuantity" class="block text-sm font-medium text-gray-700 mb-1">Adet*</label>
                             <input type="number" id="editQuantity" name="quantity" required min="1" value="${order.quantity}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
-                        <div class="col-span-1 form-group-mobile">
+                        
+                        <!-- Fiyat ve Kategori -->
+                        <div class="form-group-mobile">
                             <label for="editProductPrice" class="block text-sm font-medium text-gray-700 mb-1">Ürün Fiyatı (TL)*</label>
                             <input type="number" id="editProductPrice" name="productPrice" required min="1" step="0.01" value="${order.productPrice}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr" placeholder="Birim fiyatı">
                         </div>
-                        
-                        <!-- Kategori -->
-                         <div class="col-span-2 form-group-mobile">
+                         <div class="form-group-mobile">
                             <label for="editCategory" class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
                             <select id="editCategory" name="category" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                                 ${Object.entries(CATEGORY_MAP).map(([name, value]) => 
@@ -971,11 +974,11 @@
 
                         
                         <!-- Tarih ve Seçenekler -->
-                        <div class="col-span-1 form-group-mobile">
+                        <div class="form-group-mobile">
                             <label for="editOrderDate" class="block text-sm font-medium text-gray-700 mb-1">Sipariş Tarihi*</label>
                             <input type="date" id="editOrderDate" name="orderDate" required value="${order.orderDate}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
-                        <div class="col-span-1 form-group-mobile">
+                        <div class="form-group-mobile">
                             <label for="editDeliveryOption" class="block text-sm font-medium text-gray-700 mb-1">Teslim Seçeneği</label>
                             <select id="editDeliveryOption" name="deliveryOption" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                                 <option value="standard" ${order.deliveryOption === 'standard' ? 'selected' : ''}>Standart Teslimat</option>
@@ -983,16 +986,13 @@
                                 <option value="pickup" ${order.deliveryOption === 'pickup' ? 'selected' : ''}>Mağazadan Teslim</option>
                             </select>
                         </div>
-                        <div class="col-span-1 form-group-mobile">
+                        <div class="form-group-mobile">
                             <label for="editDeliveryDate" class="block text-sm font-medium text-gray-700 mb-1">Hedef Teslim Tarihi</label>
                             <input type="date" id="editDeliveryDate" name="deliveryDate" value="${order.deliveryDate}" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">
                         </div>
-                        <div class="col-span-1">
-                             <!-- Boş alan -->
-                        </div>
                         
-                        <!-- Aksesuarlar (DÜZELTME: Uzakatan Kumanda -> Uzaktan Kumanda) -->
-                        <div class="col-span-2 form-group-mobile">
+                        <!-- Aksesuarlar -->
+                        <div class="form-group-mobile">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Aksesuarlar</label>
                             <div class="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                                 <label class="inline-flex items-center">
@@ -1015,13 +1015,13 @@
                         </div>
 
                         <!-- Sipariş Notu -->
-                        <div class="col-span-2 form-group-mobile">
+                        <div class="form-group-mobile">
                             <label for="editOrderNote" class="block text-sm font-medium text-gray-700 mb-1">Sipariş Notu</label>
                             <textarea id="editOrderNote" name="orderNote" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-neonbirr focus:border-neonbirr">${order.orderNote || ''}</textarea>
                         </div>
 
                         <!-- Butonlar -->
-                        <div class="col-span-2 flex justify-end space-x-4 pt-4 border-t">
+                        <div class="flex justify-end space-x-4 pt-4 border-t">
                             <button type="button" onclick="window.navigateTo('order_detail')" class="bg-gray-300 text-gray-800 p-3 rounded-lg font-semibold hover:bg-gray-400 transition duration-200 shadow-md">İptal / Geri Dön</button>
                             <button type="submit" class="bg-neonbirr text-white p-3 rounded-lg font-semibold hover:bg-neonbirr-dark transition duration-200 shadow-md flex items-center">
                                 Değişiklikleri Kaydet
@@ -1579,20 +1579,6 @@
                             <p class="text-xs text-gray-500">Kullanıcı: ${window.auth.currentUser ? window.auth.currentUser.email : 'Misafir'}</p>
                             <p class="text-xs font-semibold text-neonbirr">Rol: ${currentRole ? currentRole.toUpperCase() : 'MİSAFİR'}</p>
                             <button id="logoutBtn" class="mt-2 w-full p-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200">Çıkış Yap</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Mobil Menü Açıkken Overlay -->
-                    ${isMobileMenuOpen ? `<div onclick="window.toggleMobileMenu()" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 md:hidden"></div>` : ''}
-                    
-                    <!-- Mobil Sidebar (Açık) -->
-                    <div class="fixed inset-y-0 left-0 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:hidden w-64 bg-white z-50 shadow-2xl transition-transform duration-300 flex flex-col">
-                        <div class="p-6 border-b border-gray-200 flex items-center justify-center">
-                            <img src="https://www.neonbirr.cy/cdn/shop/files/logo.png?v=1759156134&width=90" alt="Neonbirr Logo" class="h-10 w-auto object-contain">
-                        </div>
-                        ${renderMobileSidebar()}
-                         <div class="p-4 border-t border-gray-200">
-                            <button onclick="window.logoutUser()" class="mt-2 w-full p-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200">Çıkış Yap</button>
                         </div>
                     </div>
 
