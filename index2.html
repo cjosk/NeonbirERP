@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neonbirr ERP Yönetim Sistemi (Optimize)</title>
+  <link rel="icon" type="image/png" href="https://i.hizliresim.com/5sdk6we.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .text-neonbirr { color: #FF5A36; }
+    .bg-neonbirr { background-color: #FF5A36; }
+    .hover\:bg-neonbirr-dark:hover { background-color: #e65231; }
+    .border-neonbirr { border-color: #FF5A36; }
+    .sidebar-nav::-webkit-scrollbar { width: 6px; }
+    .sidebar-nav::-webkit-scrollbar-thumb { background-color: #d1d5db; border-radius: 3px; }
+    .sidebar-nav::-webkit-scrollbar-track { background-color: #f3f4f6; }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, query, where, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAB0UsTKcsRu2JBm2bAYIDHTz_qLS1WATA",
+      authDomain: "neonbirfranchisee.firebaseapp.com",
+      projectId: "neonbirfranchisee",
+      storageBucket: "neonbirfranchisee.firebasestorage.app",
+      messagingSenderId: "51668421951",
+      appId: "1:51668421951:web:7d94456ebe84bba439578a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const storage = getStorage(app);
+
+    // Global
+    let currentUserId = null;
+    let currentRole = null;
+    let currentPage = 'dashboard';
+    let currentStatusFilter = 'Tüm Siparişler';
+    let currentProductFilter = 'Tüm Ürünler';
+    let currentSearchTerm = '';
+    let currentSortOption = 'date_desc';
+    let currentOrderId = null;
+    let unsubscribeOrders = null;
+    window.imageCache = {}; let renderBatchSize = 40; let currentRenderIndex = 0; let isRendering = false;
+
+    const CATEGORY_MAP = {
+      'Canvas Neon': 'neon_standart',
+      'Baskılı Ürün': 'baskili',
+      'Şeffaf Ürün': 'seffaf',
+      'Neon Masa': 'masa',
+      'Neon Ayna': 'ayna',
+      'Toplu Siparişler': 'toplu',
+      'Takım Dekoru': 'takim_dekoru'
+    };
+
+    const ORDER_STATUSES = ['Çizilmeyi Bekleyenler','Çizildi','Üretime Alındı','Üretimi Tamamlandı','Kargo Aşamasında','Gönderilen Ürünler','Gecikti'];
+
+    const getStatusColor = (s, d)=> d?'bg-red-500 text-white':s==='Çizildi'?'bg-blue-100 text-blue-800':s==='Üretimi Tamamlandı'?'bg-green-100 text-green-800':'bg-gray-100 text-gray-800';
+    const checkIfDelayed = (o)=> o.status!=='Gönderilen Ürünler' && new Date()-new Date(o.orderDate)>14*86400000;
+
+    const showMessage=(m,t='info')=>{const c=document.getElementById('message-container');const col=t==='error'?'bg-red-500':t==='success'?'bg-green-500':'bg-blue-500';const e=document.createElement('div');e.className=`${col} text-white px-4 py-2 rounded-lg shadow-xl mb-4`;e.textContent=m;c.prepend(e);setTimeout(()=>e.remove(),4000)};
+
+    // Render optimized list
+    const renderOrderListChunked=()=>{
+      if(isRendering)return;isRendering=true;
+      const tb=document.getElementById('orderTableBody'); if(!tb){isRendering=false;return;}
+      let fo=window.orders.filter(o=>o.customerName.toLowerCase().includes(currentSearchTerm)||o.productName.toLowerCase().includes(currentSearchTerm));
+      fo.sort((a,b)=>new Date(b.addedTime)-new Date(a.addedTime));
+      const renderNextChunk=()=>{
+        const s=currentRenderIndex,e=Math.min(s+renderBatchSize,fo.length),sl=fo.slice(s,e);
+        const html=sl.map(o=>{const d=checkIfDelayed(o);const col=getStatusColor(o.status,d);const url=window.imageCache[o.imageUrl]||o.imageUrl;return`<tr class='border-b hover:bg-gray-50 cursor-pointer' onclick="alert('${o.productName}')"><td class='p-3'><img loading='lazy' src='${url}' class='w-10 h-10 rounded'></td><td class='p-3'><span class='px-2 py-1 ${col} text-xs rounded'>${d?'Gecikti':o.status}</span></td><td class='p-3 text-sm'>${o.customerName}</td><td class='p-3 text-sm'>${o.productName}</td><td class='p-3 text-sm font-bold text-green-600'>${(o.totalPrice||0).toLocaleString('tr-TR',{style:'currency',currency:'TRY'})}</td></tr>`}).join('');
+        requestAnimationFrame(()=>{tb.insertAdjacentHTML('beforeend',html);currentRenderIndex=e;isRendering=false;});
+        if(e<fo.length)setupScrollLoader(fo.length);
+      };
+      renderNextChunk();
+    };
+
+    const setupScrollLoader=(total)=>{const cont=document.querySelector('main');if(!cont)return;const onScroll=()=>{if(isRendering)return;if(currentRenderIndex>=total){cont.removeEventListener('scroll',onScroll);return;}if(cont.scrollTop+cont.clientHeight>=cont.scrollHeight-150)renderOrderListChunked();};cont.addEventListener('scroll',onScroll)};
+
+    window.setupOrderListener=()=>{
+      if(unsubscribeOrders)unsubscribeOrders();
+      const ref=collection(db,'artifacts/neonbirfranchisee/public/data/orders');
+      const q=query(ref);
+      unsubscribeOrders=onSnapshot(q,snap=>{window.orders=snap.docs.map(d=>({id:d.id,...d.data()}));currentRenderIndex=0;const tb=document.getElementById('orderTableBody');if(tb)tb.innerHTML='';renderOrderListChunked();});
+    };
+
+    onAuthStateChanged(auth,(u)=>{if(u){currentUserId=u.uid;currentRole='admin';document.getElementById('app').innerHTML=`<main class='p-6'><h1 class='text-2xl font-bold mb-4'>Sipariş Listesi</h1><div class='bg-white rounded shadow'><table class='min-w-full'><thead><tr><th class='p-3 text-left'>Durum</th><th class='p-3 text-left'>Müşteri</th><th class='p-3 text-left'>Ürün</th><th class='p-3 text-left'>Tutar</th></tr></thead><tbody id='orderTableBody'></tbody></table></div></main>`;window.setupOrderListener();}else{document.getElementById('app').innerHTML=`<div class='p-6'><h1>Giriş Gerekli</h1></div>`;}});
+  </script>
+</head>
+<body class="bg-gray-100">
+  <div id="message-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+  <div id="app" class="min-h-screen flex items-center justify-center text-gray-700">Yükleniyor...</div>
+</body>
+</html>
