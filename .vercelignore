@@ -1,5 +1,0 @@
-# Neonbirr ERP - Vercel Deployment Dosyaları
-.vercel
-.DS_Store
-node_modules
-*.log
