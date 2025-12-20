@@ -1,0 +1,106 @@
+/* Neonbirr Custom Colors */
+.text-neonbirr { color: #FF5A36; }
+.bg-neonbirr { background-color: #FF5A36; }
+.hover\:bg-neonbirr-dark:hover { background-color: #e65231; }
+.border-neonbirr { border-color: #FF5A36; }
+
+/* Custom Scrollbar for Sidebar */
+.sidebar-nav::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 3px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+    background-color: #f3f4f6;
+}
+
+/* File Input Styling */
+input[type="file"]::file-selector-button {
+    cursor: pointer;
+}
+
+/* Mobile Form Groups */
+.form-group-mobile { 
+    display: flex; 
+    flex-direction: column; 
+    margin-bottom: 1rem; 
+}
+
+.form-group-mobile > label {
+    width: 100%;
+    margin-bottom: 0.25rem;
+}
+
+/* Mobile Table Responsive */
+@media (max-width: 767px) {
+    #orderTableBody td {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        white-space: normal;
+    }
+}
+
+/* Loading Skeleton */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s ease-in-out infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Smooth Transitions */
+.transition-all-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Virtual Scroll Container */
+.virtual-scroll-container {
+    overflow-y: auto;
+    height: 100%;
+    position: relative;
+}
+
+.virtual-scroll-spacer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Pulse Animation for Delayed Orders */
+@keyframes pulse-red {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.animate-pulse-red {
+    animation: pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
